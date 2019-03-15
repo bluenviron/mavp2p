@@ -12,7 +12,8 @@ This software is based on the [**gomavlib**](https://github.com/gswly/gomavlib) 
 
 ## Features
 
-* Link together an arbitrary number of endpoints:
+* Supports Mavlink 2.0 and 1.0
+* Links together an arbitrary number of endpoints:
   * serial
   * UDP (client, server or broadcast mode)
   * TCP (client or server mode)
