@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/gswly/mavp2p)](https://goreportcard.com/report/github.com/gswly/mavp2p)
 [![Build Status](https://travis-ci.org/gswly/mavp2p.svg?branch=master)](https://travis-ci.org/gswly/mavp2p)
 
-mavp2p is a Mavlink proxy / bridge / router focusing on efficiency and flexibility. It is used primarily for linking UAV flight controllers, connected through a serial port, with ground stations on a network, but can be used to build any kind of routing involving serial, TCP and UDP, linking together multiple devices across different physical layers or transport layers.
+mavp2p is a Mavlink proxy / bridge / router focusing on efficiency and flexibility. It is used primarily for linking UAV flight controllers, connected through a serial port, with ground stations on a network, but can be used to build any kind of routing involving serial, TCP and UDP, allowing communication across different physical layers or transport layers.
 
 This software is intended as a replacement for mavproxy in systems with limited resources (i.e. companion computers), and as a replacement for mavlink-router when flexibility is needed.
 
