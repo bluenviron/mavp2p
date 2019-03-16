@@ -3,8 +3,8 @@ github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuy
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf h1:qet1QNfXsQxTZqLG4oE62mJzwPIB8+Tee4RNCL9ulrY=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/gswly/gomavlib v0.0.0-20190315221843-34d487ed13ee h1:wVJrnZpdi6iM8E9yySUMd32/IQ/WmWLmVx6GPFDOZSk=
-github.com/gswly/gomavlib v0.0.0-20190315221843-34d487ed13ee/go.mod h1:1xQWxU9I/Y19PPQg8rJh+Wxk0TC1qvZR3btjKYH5WC4=
+github.com/gswly/gomavlib v0.0.0-20190316130735-00e321df7762 h1:UWnxPwO5NMaJYa1ix6rvhhtvgXyoAtTW7HUWGYBJM9g=
+github.com/gswly/gomavlib v0.0.0-20190316130735-00e321df7762/go.mod h1:1xQWxU9I/Y19PPQg8rJh+Wxk0TC1qvZR3btjKYH5WC4=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
