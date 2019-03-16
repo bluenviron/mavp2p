@@ -10,4 +10,4 @@ before_install:
 - go mod download
 
 script:
-- go install ./
+- make buildall-nodocker
