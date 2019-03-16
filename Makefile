@@ -5,7 +5,9 @@ help:
 	@echo ""
 	@echo "available actions:"
 	@echo ""
-	@echo "  format            format source files."
+	@echo "  format       format source files."
+	@echo ""
+	@echo "  buildall     build for all supported platforms."
 	@echo ""
 
 
@@ -18,7 +20,6 @@ format:
 		&& find . -type f -name '*.go' | xargs gofmt -l -w -s"
 
 
-# -ldflags "-X main.Rev=`git rev-parse --short HEAD`"
 .PHONY: buildall
 buildall:
 	@docker run --rm -it \
@@ -36,3 +37,19 @@ buildall-nodocker:
 	GOOS=linux GOARCH=arm GOARM=7  go build -o build/mavp2p_linux_arm7
 	GOOS=linux GOARCH=arm64        go build -o build/mavp2p_linux_arm64
 	GOOS=windows GOARCH=amd64      go build -o build/mavp2p_windows_amd64.exe
+
+
+.PHONY: travis-setup-releases
+define TRAVIS_DOCKERFILE
+FROM ruby:alpine
+RUN apk add --no-cache build-base git \
+	&& gem install travis
+endef
+export TRAVIS_DOCKERFILE
+travis-setup-releases:
+	@echo "$$TRAVIS_DOCKERFILE" | docker build - -t travis-setup-releases
+	docker run --rm -it \
+		-v $(PWD):/src \
+		travis-setup-releases \
+		sh -c "cd /src \
+		&& travis setup releases"
