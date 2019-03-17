@@ -57,22 +57,25 @@ mavp2p v0.0.0 (fffffff)
 Link together specified Mavlink endpoints.
 
 Flags:
-  --help  Show context-sensitive help (also try --help-long and --help-man).
+  --help  Show context-sensitive help (also try --help-long and
+          --help-man).
 
 Args:
-  <endpoints>  space-separated list of endpoints. possible endpoints are:
+  [<endpoints>]  Space-separated list of endpoints. At least 2
+                 endpoints are required. Possible endpoints are:
 
-               serial:port:baudrate (serial)
+                 udpb:broadcast_ip:port (udp, broadcast mode)
 
-               udps:listen_ip:port (udp, server mode)
+                 tcps:listen_ip:port (tcp, server mode)
 
-               udpc:dest_ip:port (udp, client mode)
+                 tcpc:dest_ip:port (tcp, client mode)
 
-               udpb:broadcast_ip:port (udp, broadcast mode)
+                 serial:port:baudrate (serial)
 
-               tcps:listen_ip:port (tcp, server mode)
+                 udps:listen_ip:port (udp, server mode)
 
-               tcpc:dest_ip:port (tcp, client mode)
+                 udpc:dest_ip:port (udp, client mode)
+
 ```
 
 ## Links
