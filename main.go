@@ -8,6 +8,8 @@ import (
 	"regexp"
 )
 
+var Version string = "(unknown version)"
+
 var reArgs = regexp.MustCompile("^([a-z]+):(.+)$")
 
 type endpointType struct {
@@ -62,7 +64,8 @@ var endpointTypes = map[string]endpointType{
 }
 
 func main() {
-	kingpin.CommandLine.Help = "Link together specified Mavlink endpoints."
+	kingpin.CommandLine.Help = "mavp2p " + Version + "\n\n" +
+		"Link together specified Mavlink endpoints."
 
 	desc := "space-separated list of endpoints. " +
 		"possible endpoints are:\n\n"
