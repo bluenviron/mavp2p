@@ -7,7 +7,7 @@ env:
 - GO111MODULE=on
 
 before_install:
-- apt-get install -y zip
+- sudo apt-get install -y zip
 - go mod download
 
 script:
