@@ -36,25 +36,24 @@ release:
 
 
 .PHONY: release-nodocker
-TAG := $(shell git describe --tags)
-VERSION := $(shell echo "`git describe --tags` (`git rev-parse --short HEAD`)")
+VERSION := $(shell git describe --tags)
 release-nodocker:
 	@rm -rf release && mkdir release
 
 	GOOS=windows GOARCH=amd64 go build -ldflags '-X "main.Version=$(VERSION)"' -o /tmp/mavp2p.exe \
-		&& cd /tmp && zip $(PWD)/release/mavp2p_$(TAG)_windows_amd64.zip mavp2p.exe
+		&& cd /tmp && zip $(PWD)/release/mavp2p_$(VERSION)_windows_amd64.zip mavp2p.exe
 
 	GOOS=linux GOARCH=amd64 go build -ldflags '-X "main.Version=$(VERSION)"' -o /tmp/mavp2p \
-		&& tar -C /tmp -czf $(PWD)/release/mavp2p_$(TAG)_linux_amd64.tar.gz mavp2p
+		&& tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_amd64.tar.gz --owner=0 --group=0 mavp2p
 
 	GOOS=linux GOARCH=arm GOARM=6 go build -ldflags '-X "main.Version=$(VERSION)"' -o /tmp/mavp2p \
-		&& tar -C /tmp -czf $(PWD)/release/mavp2p_$(TAG)_linux_arm6.tar.gz mavp2p
+		&& tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_arm6.tar.gz --owner=0 --group=0 mavp2p
 
 	GOOS=linux GOARCH=arm GOARM=7 go build -ldflags '-X "main.Version=$(VERSION)"' -o /tmp/mavp2p \
-		&& tar -C /tmp -czf $(PWD)/release/mavp2p_$(TAG)_linux_arm7.tar.gz mavp2p
+		&& tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_arm7.tar.gz --owner=0 --group=0 mavp2p
 
 	GOOS=linux GOARCH=arm64 go build -ldflags '-X "main.Version=$(VERSION)"' -o /tmp/mavp2p \
-		&& tar -C /tmp -czf $(PWD)/release/mavp2p_$(TAG)_linux_arm64.tar.gz mavp2p
+		&& tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_arm64.tar.gz --owner=0 --group=0 mavp2p
 
 
 .PHONY: travis-setup-releases
