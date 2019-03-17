@@ -5,6 +5,7 @@ import (
 	"github.com/gswly/gomavlib"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"log"
+	"os"
 	"regexp"
 )
 
@@ -67,8 +68,8 @@ func main() {
 	kingpin.CommandLine.Help = "mavp2p " + Version + "\n\n" +
 		"Link together specified Mavlink endpoints."
 
-	desc := "space-separated list of endpoints. " +
-		"possible endpoints are:\n\n"
+	desc := "Space-separated list of endpoints. At least 2 endpoints are required. " +
+		"Possible endpoints are:\n\n"
 	for k, etype := range endpointTypes {
 		desc += fmt.Sprintf("%s:%s (%s)\n\n", k, etype.args, etype.desc)
 	}
@@ -77,7 +78,8 @@ func main() {
 	kingpin.Parse()
 
 	if len(*endpoints) < 2 {
-		log.Fatalf("at least 2 endpoints are required.")
+		kingpin.Usage()
+		os.Exit(1)
 	}
 
 	var econfs []gomavlib.EndpointConf
