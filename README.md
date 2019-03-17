@@ -6,7 +6,7 @@
 
 mavp2p is a flexible and efficient Mavlink proxy / bridge / router. It is used primarily for linking UAV flight controllers, connected through a serial port, with ground stations on a network, but can be used to build any kind of routing involving serial, TCP and UDP, allowing communication across different physical layers or transport layers.
 
-This software is intended as a replacement for mavproxy in systems with limited resources (i.e. companion computers), and as a replacement for mavlink-router when flexibility is needed.
+This software is intended as a replacement for mavproxy in systems with limited resources (for instance companion computers), and as a replacement for mavlink-router when flexibility is needed.
 
 This software is based on the [**gomavlib**](https://github.com/gswly/gomavlib) library.
 
