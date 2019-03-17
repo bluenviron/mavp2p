@@ -72,9 +72,13 @@ func main() {
 	for k, etype := range endpointTypes {
 		desc += fmt.Sprintf("%s:%s (%s)\n\n", k, etype.args, etype.desc)
 	}
-	endpoints := kingpin.Arg("endpoints", desc).Required().Strings()
+	endpoints := kingpin.Arg("endpoints", desc).Strings()
 
 	kingpin.Parse()
+
+	if len(*endpoints) < 2 {
+		log.Fatalf("at least 2 endpoints are required.")
+	}
 
 	var econfs []gomavlib.EndpointConf
 	for _, e := range *endpoints {
