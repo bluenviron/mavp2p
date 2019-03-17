@@ -35,17 +35,17 @@ Precompiled binaries are available in the [release](https://github.com/gswly/mav
 
 Receive Mavlink via serial port and transmit it via UDP in client mode:
 ```
-mavp2p serial:/dev/ttyAMA0:57600 udpc:1.2.3.4:5600
+./mavp2p serial:/dev/ttyAMA0:57600 udpc:1.2.3.4:5600
 ```
 
 Receive Mavlink via serial port and transmit it via UDP in server mode:
 ```
-mavp2p serial:/dev/ttyAMA0:57600 udps:0.0.0.0:5600
+./mavp2p serial:/dev/ttyAMA0:57600 udps:0.0.0.0:5600
 ```
 
 Receive Mavlink via UDP broadcast and transmit it via TCP:
 ```
-mavp2p udpb:192.168.7.255 tcpc:1.2.3.4:5600
+./mavp2p udpb:192.168.7.255 tcpc:1.2.3.4:5600
 ```
 
 Full command-line usage:
