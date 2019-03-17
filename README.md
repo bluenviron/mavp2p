@@ -29,15 +29,47 @@ Advantages with respect to mavlink-router:
 
 ## Installation
 
-TODO
+Precompiled binaries are available in the [release](https://github.com/gswly/mavp2p/releases) page.
 
 ## Usage
 
-TODO
+```
+usage: mavp2p [<flags>] <endpoints>...
+
+mavp2p v0.0.0 (fffffff)
+
+Link together specified Mavlink endpoints.
+
+Flags:
+  --help  Show context-sensitive help (also try --help-long and --help-man).
+
+Args:
+  <endpoints>  space-separated list of endpoints. possible endpoints are:
+
+               serial:port:baudrate (serial)
+
+               udps:listen_ip:port (udp, server mode)
+
+               udpc:dest_ip:port (udp, client mode)
+
+               udpb:broadcast_ip:port (udp, broadcast mode)
+
+               tcps:listen_ip:port (tcp, server mode)
+
+               tcpc:dest_ip:port (tcp, client mode)
+```
 
 Usage examples:
 
-TODO
+* Receive Mavlink via serial port and transmit it via UDP
+  ```
+  mavp2p serial:/dev/ttyAMA0 udpc:1.2.3.4:5600
+  ```
+
+* Receive Mavlink via UDP broadcast and transmit it via TCP
+  ```
+  mavp2p udpb:192.168.7.255 tcpc:1.2.3.4:5600
+  ```
 
 ## Links
 
