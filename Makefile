@@ -44,7 +44,7 @@ release-nodocker:
 	go mod download
 
 	GOOS=windows GOARCH=amd64 go build -ldflags $(LDFLAGS) -o /tmp/mavp2p.exe
-	cd /tmp && zip $(PWD)/release/mavp2p_$(VERSION)_windows_amd64.zip mavp2p.exe
+	cd /tmp && zip -q $(PWD)/release/mavp2p_$(VERSION)_windows_amd64.zip mavp2p.exe
 
 	GOOS=linux GOARCH=amd64 go build -ldflags $(LDFLAGS) -o /tmp/mavp2p
 	tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_amd64.tar.gz --owner=0 --group=0 mavp2p
