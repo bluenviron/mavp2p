@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gswly/gomavlib"
+	"github.com/gswly/gomavlib/dialects/common"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"log"
 	"os"
@@ -65,12 +66,17 @@ var endpointTypes = map[string]endpointType{
 	},
 }
 
+type NodeId struct {
+	SystemId    byte
+	ComponentId byte
+}
+
 func main() {
 	kingpin.CommandLine.Help = "mavp2p " + Version + "\n\n" +
 		"Link together specified Mavlink endpoints."
 
 	hbDisable := kingpin.Flag("hb-disable", "disable periodic heartbeats").Bool()
-	hbVersion := kingpin.Flag("hb-version", "set mavlink version of heartbeats").Default("2").Enum("1", "2")
+	hbVersion := kingpin.Flag("hb-version", "set mavlink version of heartbeats").Default("1").Enum("1", "2")
 	hbSystemId := kingpin.Flag("hb-systemid", "set system id of heartbeats. it is advised to set a different system id for each router in the network.").Default("125").Int()
 	hbPeriod := kingpin.Flag("hb-period", "set period of heartbeats").Default("5").Int()
 
@@ -109,9 +115,17 @@ func main() {
 		econfs = append(econfs, e)
 	}
 
+	// decode and encode heartbeats
+	dialect, err := gomavlib.NewDialect([]gomavlib.Message{
+		&common.MessageHeartbeat{},
+	})
+	if err != nil {
+		log.Fatalf("error: %s", err)
+	}
+
 	node, err := gomavlib.NewNode(gomavlib.NodeConf{
 		Endpoints: econfs,
-		Dialect:   nil,
+		Dialect:   dialect,
 		Version: func() gomavlib.NodeVersion {
 			if *hbVersion == "2" {
 				return gomavlib.V2
@@ -130,6 +144,8 @@ func main() {
 
 	log.Printf("router started with %d endpoints", len(econfs))
 
+	nodes := make(map[NodeId]struct{})
+
 	for {
 		// wait until a message is received.
 		res, ok := node.Read()
@@ -137,8 +153,15 @@ func main() {
 			break
 		}
 
-		// print message details
-		//fmt.Printf("received: id=%d, %+v\n", res.Message().GetId(), res.Message())
+		// display message if node is new
+		nodeId := NodeId{
+			SystemId:    res.SystemId(),
+			ComponentId: res.ComponentId(),
+		}
+		if _, ok := nodes[nodeId]; !ok {
+			nodes[nodeId] = struct{}{}
+			log.Printf("node detected (sid=%d, cid=%d)", res.SystemId(), res.ComponentId())
+		}
 
 		// route message to every other channel
 		node.WriteFrameExcept(res.Channel, res.Frame)
