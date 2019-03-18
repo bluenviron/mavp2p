@@ -62,7 +62,7 @@ Flags:
   --print-errors     print errors on screen.
   --hb-disable       disable periodic heartbeats
   --hb-version=1     set mavlink version of heartbeats
-  --hb-systemid=125  set system id of heartbeats. it is advised to set
+  --hb-systemid=125  set system id of heartbeats. it is recommended to set
                      a different system id for each router in the
                      network.
   --hb-period=5      set period of heartbeats

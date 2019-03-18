@@ -79,7 +79,7 @@ func main() {
 
 	hbDisable := kingpin.Flag("hb-disable", "disable periodic heartbeats").Bool()
 	hbVersion := kingpin.Flag("hb-version", "set mavlink version of heartbeats").Default("1").Enum("1", "2")
-	hbSystemId := kingpin.Flag("hb-systemid", "set system id of heartbeats. it is advised to set a different system id for each router in the network.").Default("125").Int()
+	hbSystemId := kingpin.Flag("hb-systemid", "set system id of heartbeats. it is recommended to set a different system id for each router in the network.").Default("125").Int()
 	hbPeriod := kingpin.Flag("hb-period", "set period of heartbeats").Default("5").Int()
 
 	desc := "Space-separated list of endpoints. At least 2 endpoints are required. " +
