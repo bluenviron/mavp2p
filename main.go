@@ -115,27 +115,22 @@ func main() {
 		econfs = append(econfs, e)
 	}
 
-	// decode and encode heartbeats
-	dialect, err := gomavlib.NewDialect([]gomavlib.Message{
-		&common.MessageHeartbeat{},
-	})
-	if err != nil {
-		log.Fatalf("error: %s", err)
-	}
-
 	node, err := gomavlib.NewNode(gomavlib.NodeConf{
 		Endpoints: econfs,
-		Dialect:   dialect,
+		// decode, encode, validate at least the common messages
+		// heartbeat is needed for heartbeat to work
+		Dialect: common.Dialect,
 		Version: func() gomavlib.NodeVersion {
 			if *hbVersion == "2" {
 				return gomavlib.V2
 			}
 			return gomavlib.V1
 		}(),
-		SystemId:         byte(*hbSystemId),
-		ComponentId:      1,
-		HeartbeatDisable: *hbDisable,
-		HeartbeatPeriod:  (time.Duration(*hbPeriod) * time.Second),
+		SystemId:          byte(*hbSystemId),
+		ComponentId:       1,
+		HeartbeatDisable:  *hbDisable,
+		HeartbeatPeriod:   (time.Duration(*hbPeriod) * time.Second),
+		ReturnParseErrors: true,
 	})
 	if err != nil {
 		log.Fatalf("error: %s", err)
@@ -145,12 +140,28 @@ func main() {
 	log.Printf("router started with %d endpoints", len(econfs))
 
 	nodes := make(map[NodeId]struct{})
+	errorCount := 0
+
+	go func() {
+		for {
+			time.Sleep(5 * time.Second)
+			if errorCount > 0 {
+				log.Printf("%d errors detected in last 5 seconds", errorCount)
+				errorCount = 0
+			}
+		}
+	}()
 
 	for {
 		// wait until a message is received.
 		res, ok := node.Read()
 		if ok == false {
 			break
+		}
+
+		if res.Error != nil {
+			errorCount++
+			continue
 		}
 
 		// display message if node is new
@@ -160,7 +171,7 @@ func main() {
 		}
 		if _, ok := nodes[nodeId]; !ok {
 			nodes[nodeId] = struct{}{}
-			log.Printf("node detected (sid=%d, cid=%d)", res.SystemId(), res.ComponentId())
+			log.Printf("new node detected (sid=%d, cid=%d)", res.SystemId(), res.ComponentId())
 		}
 
 		// route message to every other channel
