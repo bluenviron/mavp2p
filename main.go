@@ -127,6 +127,6 @@ func main() {
 		//fmt.Printf("received: id=%d, %+v\n", res.Message().GetId(), res.Message())
 
 		// route message to every other channel
-		node.WriteFrameExcept(res.Channel(), res.Frame())
+		node.WriteFrameExcept(res.Channel, res.Frame)
 	}
 }
