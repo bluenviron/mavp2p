@@ -73,7 +73,7 @@ type NodeId struct {
 
 func main() {
 	kingpin.CommandLine.Help = "mavp2p " + Version + "\n\n" +
-		"Link together specified Mavlink endpoints."
+		"Link together Mavlink endpoints."
 
 	printErrors := kingpin.Flag("print-errors", "print errors on screen.").Bool()
 
