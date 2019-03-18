@@ -40,7 +40,7 @@ release:
 VERSION := $(shell git describe --tags)
 LDFLAGS := '-X "main.Version=$(VERSION)"'
 release-nodocker:
-	@rm -rf release && mkdir release
+	rm -rf release && mkdir release
 
 	GOOS=windows GOARCH=amd64 go build -ldflags $(LDFLAGS) -o /tmp/mavp2p.exe
 	cd /tmp && zip -q $(PWD)/release/mavp2p_$(VERSION)_windows_amd64.zip mavp2p.exe
