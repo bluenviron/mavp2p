@@ -117,11 +117,18 @@ func main() {
 		econfs = append(econfs, e)
 	}
 
+	// decode/encode only heartbeat
+	// needed for heartbeat to work
+	dialect, err := gomavlib.NewDialect([]gomavlib.Message{
+		&common.MessageHeartbeat{},
+	})
+	if err != nil {
+		log.Fatalf("error: %s", err)
+	}
+
 	node, err := gomavlib.NewNode(gomavlib.NodeConf{
 		Endpoints: econfs,
-		// decode, encode, validate at least the common messages
-		// heartbeat is needed for heartbeat to work
-		Dialect: common.Dialect,
+		Dialect:   dialect,
 		Version: func() gomavlib.NodeVersion {
 			if *hbVersion == "2" {
 				return gomavlib.V2
