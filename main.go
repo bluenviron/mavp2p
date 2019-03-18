@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"time"
 )
 
 var Version string = "(unknown version)"
@@ -68,6 +69,11 @@ func main() {
 	kingpin.CommandLine.Help = "mavp2p " + Version + "\n\n" +
 		"Link together specified Mavlink endpoints."
 
+	hbDisable := kingpin.Flag("hb-disable", "disable periodic heartbeats").Bool()
+	hbVersion := kingpin.Flag("hb-version", "set mavlink version of heartbeats").Default("2").Enum("1", "2")
+	hbSystemId := kingpin.Flag("hb-systemid", "set system id of heartbeats. it is advised to set a different system id for each router in the network.").Default("125").Int()
+	hbPeriod := kingpin.Flag("hb-period", "set period of heartbeats").Default("5").Int()
+
 	desc := "Space-separated list of endpoints. At least 2 endpoints are required. " +
 		"Possible endpoints are:\n\n"
 	for k, etype := range endpointTypes {
@@ -104,10 +110,18 @@ func main() {
 	}
 
 	node, err := gomavlib.NewNode(gomavlib.NodeConf{
-		Dialect:     nil,
-		SystemId:    125,
-		ComponentId: 1,
-		Endpoints:   econfs,
+		Endpoints: econfs,
+		Dialect:   nil,
+		Version: func() gomavlib.NodeVersion {
+			if *hbVersion == "2" {
+				return gomavlib.V2
+			}
+			return gomavlib.V1
+		}(),
+		SystemId:         byte(*hbSystemId),
+		ComponentId:      1,
+		HeartbeatDisable: *hbDisable,
+		HeartbeatPeriod:  (time.Duration(*hbPeriod) * time.Second),
 	})
 	if err != nil {
 		log.Fatalf("error: %s", err)
