@@ -75,6 +75,8 @@ func main() {
 	kingpin.CommandLine.Help = "mavp2p " + Version + "\n\n" +
 		"Link together specified Mavlink endpoints."
 
+	printErrors := kingpin.Flag("print-errors", "print errors on screen.").Bool()
+
 	hbDisable := kingpin.Flag("hb-disable", "disable periodic heartbeats").Bool()
 	hbVersion := kingpin.Flag("hb-version", "set mavlink version of heartbeats").Default("1").Enum("1", "2")
 	hbSystemId := kingpin.Flag("hb-systemid", "set system id of heartbeats. it is advised to set a different system id for each router in the network.").Default("125").Int()
@@ -142,15 +144,17 @@ func main() {
 	nodes := make(map[NodeId]struct{})
 	errorCount := 0
 
-	go func() {
-		for {
-			time.Sleep(5 * time.Second)
-			if errorCount > 0 {
-				log.Printf("%d errors detected in last 5 seconds", errorCount)
-				errorCount = 0
+	if *printErrors == false {
+		go func() {
+			for {
+				time.Sleep(5 * time.Second)
+				if errorCount > 0 {
+					log.Printf("%d errors in last 5 seconds", errorCount)
+					errorCount = 0
+				}
 			}
-		}
-	}()
+		}()
+	}
 
 	for {
 		// wait until a message is received.
@@ -160,7 +164,11 @@ func main() {
 		}
 
 		if res.Error != nil {
-			errorCount++
+			if *printErrors == true {
+				log.Printf("err: %s", res.Error)
+			} else {
+				errorCount++
+			}
 			continue
 		}
 
@@ -171,7 +179,7 @@ func main() {
 		}
 		if _, ok := nodes[nodeId]; !ok {
 			nodes[nodeId] = struct{}{}
-			log.Printf("new node detected (sid=%d, cid=%d)", res.SystemId(), res.ComponentId())
+			log.Printf("new node (sid=%d, cid=%d)", res.SystemId(), res.ComponentId())
 		}
 
 		// route message to every other channel

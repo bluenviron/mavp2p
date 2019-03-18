@@ -59,15 +59,17 @@ Link together specified Mavlink endpoints.
 Flags:
   --help             Show context-sensitive help (also try --help-long
                      and --help-man).
+  --print-errors     print errors on screen.
   --hb-disable       disable periodic heartbeats
-  --hb-version=2     set mavlink version of heartbeats
-  --hb-systemid=125  set system id of heartbeats. it is advised to set a
-                     different system id for each router in the network.
+  --hb-version=1     set mavlink version of heartbeats
+  --hb-systemid=125  set system id of heartbeats. it is advised to set
+                     a different system id for each router in the
+                     network.
   --hb-period=5      set period of heartbeats
 
 Args:
-  [<endpoints>]  Space-separated list of endpoints. At least 2 endpoints
-                 are required. Possible endpoints are:
+  [<endpoints>]  Space-separated list of endpoints. At least 2
+                 endpoints are required. Possible endpoints are:
 
                  serial:port:baudrate (serial)
 
