@@ -4,26 +4,31 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/gswly/mavp2p)](https://goreportcard.com/report/github.com/gswly/mavp2p)
 [![Build Status](https://travis-ci.org/gswly/mavp2p.svg?branch=master)](https://travis-ci.org/gswly/mavp2p)
 
-mavp2p is a flexible and efficient Mavlink proxy / bridge / router. It is used primarily for linking UAV flight controllers, connected through a serial port, with ground stations on a network, but can be used to build any kind of routing involving serial, TCP and UDP, allowing communication across different physical layers or transport layers.
+_mavp2p_ is a flexible and efficient Mavlink proxy / bridge / router, implemented in the form of a command-line utility. It is used primarily for linking UAV flight controllers, connected through a serial port, with ground stations on a network, but can be used to build any kind of routing involving serial, TCP and UDP, allowing communication across different physical layers or transport layers.
 
-This software is intended as a replacement for mavproxy in systems with limited resources (for instance companion computers), and as a replacement for mavlink-router when flexibility is needed.
+_mavp2p_ can replace _mavproxy_ in systems with limited resources (for instance companion computers), and _mavlink-router_ when more flexibility is needed.
 
-This software is based on the [**gomavlib**](https://github.com/gswly/gomavlib) library.
+This project makes use of the [**gomavlib**](https://github.com/gswly/gomavlib) library, a full-featured Mavlink library.
 
 ## Features
 
-* Supports Mavlink 2.0 and 1.0
+Main features:
 * Links together an arbitrary number of endpoints:
   * serial
   * UDP (client, server or broadcast mode)
   * TCP (client or server mode)
-* Transports can be reached by domain name or IP
+* Supports Mavlink 2.0 and 1.0
+* Dialect agnostic, supports any dialect
+* Supports domain names in place of IPs
+* Automatically reconnects to TCP and UDP servers
+* Multiplatform and available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, armhf, amd64)
 
-Advantages with respect to mavproxy:
+Advantages with respect to _mavproxy_:
+* Does not require python nor any interpreter
 * Much lower CPU and memory usage
-* Arbitrary number of inputs and outputs
+* Supports an arbitrary number of inputs and outputs
 
-Advantages with respect to mavlink-router:
+Advantages with respect to _mavlink-router_:
 * Supports domain names
 * Supports multiple TCP servers
 
@@ -33,17 +38,17 @@ Precompiled binaries are available in the [release](https://github.com/gswly/mav
 
 ## Usage
 
-Receive Mavlink via serial port and transmit it via UDP in client mode:
+Link a serial port with a UDP endpoint in client mode:
 ```
 ./mavp2p serial:/dev/ttyAMA0:57600 udpc:1.2.3.4:5600
 ```
 
-Receive Mavlink via serial port and transmit it via UDP in server mode:
+Link a serial port with a UDP endpoint in server mode:
 ```
 ./mavp2p serial:/dev/ttyAMA0:57600 udps:0.0.0.0:5600
 ```
 
-Receive Mavlink via UDP broadcast and transmit it via TCP:
+Link a UDP endpoint in broadcast mode with a TCP endpoint in client mode:
 ```
 ./mavp2p udpb:192.168.7.255 tcpc:1.2.3.4:5600
 ```
