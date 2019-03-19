@@ -17,11 +17,10 @@ Main features:
   * serial
   * UDP (client, server or broadcast mode)
   * TCP (client or server mode)
-* Supports Mavlink 2.0 and 1.0
-* Dialect agnostic, supports any dialect
+* Supports Mavlink 2.0 and 1.0, supports any dialect
 * Supports domain names in place of IPs
 * Automatically reconnects to TCP and UDP servers
-* Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, armhf, amd64)
+* Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, armhf, amd64), not dependent on libc and compatible with lightweight distros (Alpine Linux)
 
 Advantages with respect to _mavproxy_:
 * Does not require python nor any interpreter
