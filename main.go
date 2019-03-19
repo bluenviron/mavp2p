@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var Version string = "(unknown version)"
+var Version string = "v0.0.0"
 
 var reArgs = regexp.MustCompile("^([a-z]+):(.+)$")
 
@@ -146,6 +146,7 @@ func main() {
 	}
 	defer node.Close()
 
+	log.Printf("mavp2p %s", Version)
 	log.Printf("router started with %d endpoints", len(econfs))
 
 	nodes := make(map[NodeId]struct{})
