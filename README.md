@@ -21,7 +21,7 @@ Main features:
 * Dialect agnostic, supports any dialect
 * Supports domain names in place of IPs
 * Automatically reconnects to TCP and UDP servers
-* Multiplatform and available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, armhf, amd64)
+* Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, armhf, amd64)
 
 Advantages with respect to _mavproxy_:
 * Does not require python nor any interpreter
