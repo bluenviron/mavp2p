@@ -18,50 +18,50 @@ var reArgs = regexp.MustCompile("^([a-z]+):(.+)$")
 type endpointType struct {
 	args string
 	desc string
-	make func(args string) (gomavlib.EndpointConf, error)
+	make func(args string) gomavlib.EndpointConf
 }
 
 var endpointTypes = map[string]endpointType{
 	"serial": {
 		"port:baudrate",
 		"serial",
-		func(args string) (gomavlib.EndpointConf, error) {
-			return gomavlib.EndpointSerial{args}, nil
+		func(args string) gomavlib.EndpointConf {
+			return gomavlib.EndpointSerial{args}
 		},
 	},
 	"udps": {
 		"listen_ip:port",
 		"udp, server mode",
-		func(args string) (gomavlib.EndpointConf, error) {
-			return gomavlib.EndpointUdpServer{args}, nil
+		func(args string) gomavlib.EndpointConf {
+			return gomavlib.EndpointUdpServer{args}
 		},
 	},
 	"udpc": {
 		"dest_ip:port",
 		"udp, client mode",
-		func(args string) (gomavlib.EndpointConf, error) {
-			return gomavlib.EndpointUdpClient{args}, nil
+		func(args string) gomavlib.EndpointConf {
+			return gomavlib.EndpointUdpClient{args}
 		},
 	},
 	"udpb": {
 		"broadcast_ip:port",
 		"udp, broadcast mode",
-		func(args string) (gomavlib.EndpointConf, error) {
-			return gomavlib.EndpointUdpBroadcast{BroadcastAddress: args}, nil
+		func(args string) gomavlib.EndpointConf {
+			return gomavlib.EndpointUdpBroadcast{BroadcastAddress: args}
 		},
 	},
 	"tcps": {
 		"listen_ip:port",
 		"tcp, server mode",
-		func(args string) (gomavlib.EndpointConf, error) {
-			return gomavlib.EndpointTcpServer{args}, nil
+		func(args string) gomavlib.EndpointConf {
+			return gomavlib.EndpointTcpServer{args}
 		},
 	},
 	"tcpc": {
 		"dest_ip:port",
 		"tcp, client mode",
-		func(args string) (gomavlib.EndpointConf, error) {
-			return gomavlib.EndpointTcpClient{args}, nil
+		func(args string) gomavlib.EndpointConf {
+			return gomavlib.EndpointTcpClient{args}
 		},
 	},
 }
@@ -69,6 +69,11 @@ var endpointTypes = map[string]endpointType{
 type NodeId struct {
 	SystemId    byte
 	ComponentId byte
+}
+
+func initError(msg string, args ...interface{}) {
+	fmt.Printf("ERROR: "+msg+"\n", args...)
+	os.Exit(1)
 }
 
 func main() {
@@ -89,32 +94,32 @@ func main() {
 	}
 	endpoints := kingpin.Arg("endpoints", desc).Strings()
 
+	// print usage if no args are provided
+	if len(os.Args) <= 1 {
+		kingpin.Usage()
+		os.Exit(1)
+	}
+
 	kingpin.Parse()
 
 	if len(*endpoints) < 2 {
-		kingpin.Usage()
-		os.Exit(1)
+		initError("at least 2 endpoints are required")
 	}
 
 	var econfs []gomavlib.EndpointConf
 	for _, e := range *endpoints {
 		matches := reArgs.FindStringSubmatch(e)
 		if matches == nil {
-			log.Fatalf("invalid endpoint: %s", e)
+			initError("invalid endpoint: %s", e)
 		}
 		key, args := matches[1], matches[2]
 
 		etype, ok := endpointTypes[key]
 		if ok == false {
-			log.Fatalf("invalid endpoint: %s", e)
+			initError("invalid endpoint: %s", e)
 		}
 
-		e, err := etype.make(args)
-		if err != nil {
-			log.Fatalf("error: %s", err)
-		}
-
-		econfs = append(econfs, e)
+		econfs = append(econfs, etype.make(args))
 	}
 
 	// decode/encode only heartbeat
@@ -123,7 +128,7 @@ func main() {
 		&common.MessageHeartbeat{},
 	})
 	if err != nil {
-		log.Fatalf("error: %s", err)
+		initError(err.Error())
 	}
 
 	node, err := gomavlib.NewNode(gomavlib.NodeConf{
@@ -142,7 +147,7 @@ func main() {
 		ReturnParseErrors: true,
 	})
 	if err != nil {
-		log.Fatalf("error: %s", err)
+		initError(err.Error())
 	}
 	defer node.Close()
 
@@ -157,7 +162,7 @@ func main() {
 			for {
 				time.Sleep(5 * time.Second)
 				if errorCount > 0 {
-					log.Printf("%d errors in last 5 seconds", errorCount)
+					log.Printf("%d errors in the last 5 seconds", errorCount)
 					errorCount = 0
 				}
 			}
