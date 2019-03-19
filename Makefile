@@ -38,23 +38,23 @@ release:
 
 .PHONY: release-nodocker
 VERSION := $(shell git describe --tags)
-LDFLAGS := '-X "main.Version=$(VERSION)"'
+LDFLAGS := -ldflags '-X "main.Version=$(VERSION)"'
 release-nodocker:
 	rm -rf release && mkdir release
 
-	GOOS=windows GOARCH=amd64 go build -ldflags $(LDFLAGS) -o /tmp/mavp2p.exe
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build $(LDFLAGS) -o /tmp/mavp2p.exe
 	cd /tmp && zip -q $(PWD)/release/mavp2p_$(VERSION)_windows_amd64.zip mavp2p.exe
 
-	GOOS=linux GOARCH=amd64 go build -ldflags $(LDFLAGS) -o /tmp/mavp2p
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o /tmp/mavp2p
 	tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_amd64.tar.gz --owner=0 --group=0 mavp2p
 
-	GOOS=linux GOARCH=arm GOARM=6 go build -ldflags $(LDFLAGS) -o /tmp/mavp2p
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 go build $(LDFLAGS) -o /tmp/mavp2p
 	tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_arm6.tar.gz --owner=0 --group=0 mavp2p
 
-	GOOS=linux GOARCH=arm GOARM=7 go build -ldflags $(LDFLAGS) -o /tmp/mavp2p
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build $(LDFLAGS) -o /tmp/mavp2p
 	tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_arm7.tar.gz --owner=0 --group=0 mavp2p
 
-	GOOS=linux GOARCH=arm64 go build -ldflags $(LDFLAGS) -o /tmp/mavp2p
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o /tmp/mavp2p
 	tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_arm64.tar.gz --owner=0 --group=0 mavp2p
 
 
