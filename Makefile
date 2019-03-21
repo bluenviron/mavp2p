@@ -24,16 +24,17 @@ format:
 define RELEASE_DOCKERFILE
 FROM amd64/golang:1.11-stretch
 RUN apt-get update && apt-get install -y zip
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
 endef
 export RELEASE_DOCKERFILE
 release:
-	@echo "$$RELEASE_DOCKERFILE" | docker build - -t mavp2p-release \
+	@echo "$$RELEASE_DOCKERFILE" | docker build . -f - -t mavp2p-release \
 		&& docker run --rm -it \
 		-v $(PWD):/src \
 		mavp2p-release \
-		sh -c "cd /src \
-		&& go mod download \
-		&& make release-nodocker"
+		sh -c "make release-nodocker"
 
 
 .PHONY: release-nodocker
