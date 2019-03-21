@@ -122,8 +122,8 @@ func main() {
 		econfs = append(econfs, etype.make(args))
 	}
 
-	// decode/encode only heartbeat
-	// needed for heartbeat to work
+	// decode/encode only heartbeat, needed for heartbeat to work.
+	// other messages change too frequently and cannot be integrated into a static tool.
 	dialect, err := gomavlib.NewDialect([]gomavlib.Message{
 		&common.MessageHeartbeat{},
 	})
@@ -154,8 +154,8 @@ func main() {
 	log.Printf("mavp2p %s", Version)
 	log.Printf("router started with %d endpoints", len(econfs))
 
-	nodes := make(map[NodeId]struct{})
 	errorCount := 0
+	nodes := make(map[NodeId]struct{})
 
 	if *printErrors == false {
 		go func() {
@@ -185,7 +185,7 @@ func main() {
 			continue
 		}
 
-		// display message if node is new
+		// new node
 		nodeId := NodeId{
 			SystemId:    res.SystemId(),
 			ComponentId: res.ComponentId(),
