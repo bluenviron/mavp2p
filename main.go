@@ -72,7 +72,7 @@ type NodeId struct {
 }
 
 func initError(msg string, args ...interface{}) {
-	fmt.Printf("ERROR: "+msg+"\n", args...)
+	fmt.Fprintf(os.Stderr, "ERROR: "+msg+"\n", args...)
 	os.Exit(1)
 }
 
