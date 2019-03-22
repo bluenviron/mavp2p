@@ -140,11 +140,10 @@ func main() {
 			}
 			return gomavlib.V1
 		}(),
-		SystemId:          byte(*hbSystemId),
-		ComponentId:       1,
-		HeartbeatDisable:  *hbDisable,
-		HeartbeatPeriod:   (time.Duration(*hbPeriod) * time.Second),
-		ReturnParseErrors: true,
+		SystemId:         byte(*hbSystemId),
+		ComponentId:      1,
+		HeartbeatDisable: *hbDisable,
+		HeartbeatPeriod:  (time.Duration(*hbPeriod) * time.Second),
 	})
 	if err != nil {
 		initError(err.Error())
@@ -169,33 +168,34 @@ func main() {
 		}()
 	}
 
-	for {
-		// wait until a message is received.
-		res, ok := node.Read()
-		if ok == false {
-			break
-		}
+	for e := range node.Events() {
+		switch evt := e.(type) {
+		case *gomavlib.NodeEventChannelOpen:
+			log.Printf("channel opened: %s", evt.Channel)
 
-		if res.Error != nil {
+		case *gomavlib.NodeEventChannelClose:
+			log.Printf("channel closed: %s", evt.Channel)
+
+		case *gomavlib.NodeEventFrame:
+			// new node
+			nodeId := NodeId{
+				SystemId:    evt.SystemId(),
+				ComponentId: evt.ComponentId(),
+			}
+			if _, ok := nodes[nodeId]; !ok {
+				nodes[nodeId] = struct{}{}
+				log.Printf("node appeared: sid=%d, cid=%d", evt.SystemId(), evt.ComponentId())
+			}
+
+			// route message to every other channel
+			node.WriteFrameExcept(evt.Channel, evt.Frame)
+
+		case *gomavlib.NodeEventParseError:
 			if *printErrors == true {
-				log.Printf("err: %s", res.Error)
+				log.Printf("err: %s", evt.Error)
 			} else {
 				errorCount++
 			}
-			continue
 		}
-
-		// new node
-		nodeId := NodeId{
-			SystemId:    res.SystemId(),
-			ComponentId: res.ComponentId(),
-		}
-		if _, ok := nodes[nodeId]; !ok {
-			nodes[nodeId] = struct{}{}
-			log.Printf("new node (sid=%d, cid=%d)", res.SystemId(), res.ComponentId())
-		}
-
-		// route message to every other channel
-		node.WriteFrameExcept(res.Channel, res.Frame)
 	}
 }
