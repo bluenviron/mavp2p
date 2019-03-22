@@ -47,7 +47,7 @@ Link a serial port with a UDP endpoint in server mode:
 ./mavp2p serial:/dev/ttyAMA0:57600 udps:0.0.0.0:5600
 ```
 
-Link a UDP endpoint in broadcast mode with a TCP endpoint in client mode, available via a domain name:
+Link a UDP endpoint in broadcast mode with a TCP endpoint in client mode:
 ```
 ./mavp2p udpb:192.168.7.255 tcpc:exampleendpoint.com:5600
 ```
