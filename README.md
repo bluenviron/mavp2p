@@ -13,7 +13,7 @@ This project makes use of the [**gomavlib**](https://github.com/gswly/gomavlib) 
 ## Features
 
 Main features:
-* Links together an arbitrary number of endpoints:
+* Links together an arbitrary number of different types of endpoints:
   * serial
   * UDP (client, server or broadcast mode)
   * TCP (client or server mode)
