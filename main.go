@@ -5,6 +5,7 @@ import (
 	"github.com/gswly/gomavlib"
 	"github.com/gswly/gomavlib/dialects/common"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -80,7 +81,8 @@ func main() {
 	kingpin.CommandLine.Help = "mavp2p " + Version + "\n\n" +
 		"Link together Mavlink endpoints."
 
-	printErrors := kingpin.Flag("print-errors", "print errors on screen.").Bool()
+	quiet := kingpin.Flag("quiet", "suppress info messages during execution.").Short('q').Bool()
+	printErrors := kingpin.Flag("print-errors", "print parse errors on screen.").Bool()
 
 	hbDisable := kingpin.Flag("hb-disable", "disable periodic heartbeats").Bool()
 	hbVersion := kingpin.Flag("hb-version", "set mavlink version of heartbeats").Default("1").Enum("1", "2")
@@ -149,6 +151,10 @@ func main() {
 		initError(err.Error())
 	}
 	defer node.Close()
+
+	if *quiet == true {
+		log.SetOutput(ioutil.Discard)
+	}
 
 	log.Printf("mavp2p %s", Version)
 	log.Printf("router started with %d endpoints", len(econfs))

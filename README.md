@@ -56,24 +56,29 @@ Full command-line usage:
 ```
 usage: run [<flags>] [<endpoints>...]
 
-mavp2p (unknown version)
+mavp2p v0.0.0
 
-Link together specified Mavlink endpoints.
+Link together Mavlink endpoints.
 
 Flags:
-  --help             Show context-sensitive help (also try --help-long
-                     and --help-man).
-  --print-errors     print errors on screen.
-  --hb-disable       disable periodic heartbeats
-  --hb-version=1     set mavlink version of heartbeats
-  --hb-systemid=125  set system id of heartbeats. it is recommended to set
-                     a different system id for each router in the
-                     network.
-  --hb-period=5      set period of heartbeats
+      --help             Show context-sensitive help (also try --help-long
+                         and --help-man).
+  -q, --quiet            suppress info messages during execution.
+      --print-errors     print parse errors on screen.
+      --hb-disable       disable periodic heartbeats
+      --hb-version=1     set mavlink version of heartbeats
+      --hb-systemid=125  set system id of heartbeats. it is recommended to
+                         set a different system id for each router in the
+                         network.
+      --hb-period=5      set period of heartbeats
 
 Args:
-  [<endpoints>]  Space-separated list of endpoints. At least 2
-                 endpoints are required. Possible endpoints are:
+  [<endpoints>]  Space-separated list of endpoints. At least 2 endpoints are
+                 required. Possible endpoints are:
+
+                 tcps:listen_ip:port (tcp, server mode)
+
+                 tcpc:dest_ip:port (tcp, client mode)
 
                  serial:port:baudrate (serial)
 
@@ -82,10 +87,6 @@ Args:
                  udpc:dest_ip:port (udp, client mode)
 
                  udpb:broadcast_ip:port (udp, broadcast mode)
-
-                 tcps:listen_ip:port (tcp, server mode)
-
-                 tcpc:dest_ip:port (tcp, client mode)
 
 ```
 
