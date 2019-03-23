@@ -6,7 +6,7 @@ help:
 	@echo ""
 	@echo "  format       format source files."
 	@echo "  release      build release assets for all supported platforms."
-	@echo "  travis-setup-releases set up travis."
+	@echo "  travis-setup set up travis for automatic releases."
 	@echo ""
 
 format:
@@ -48,7 +48,7 @@ release-nodocker:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o /tmp/mavp2p
 	tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_arm64.tar.gz --owner=0 --group=0 mavp2p
 
-travis-setup-releases:
+travis-setup:
 	@echo "FROM ruby:alpine \n\
 		RUN apk add --no-cache build-base git \n\
 		RUN gem install travis" | docker build - -t mavp2p-travis-sr \
