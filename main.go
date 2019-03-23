@@ -160,7 +160,6 @@ func main() {
 	log.Printf("router started with %d endpoints", len(econfs))
 
 	errorCount := 0
-	nodes := make(map[NodeId]struct{})
 
 	if *printErrors == false {
 		go func() {
@@ -182,17 +181,13 @@ func main() {
 		case *gomavlib.NodeEventChannelClose:
 			log.Printf("channel closed: %s", evt.Channel)
 
-		case *gomavlib.NodeEventFrame:
-			// new node
-			nodeId := NodeId{
-				SystemId:    evt.SystemId(),
-				ComponentId: evt.ComponentId(),
-			}
-			if _, ok := nodes[nodeId]; !ok {
-				nodes[nodeId] = struct{}{}
-				log.Printf("node appeared: sid=%d, cid=%d", evt.SystemId(), evt.ComponentId())
-			}
+		case *gomavlib.NodeEventNodeAppear:
+			log.Printf("node appeared: %s", evt.Node)
 
+		case *gomavlib.NodeEventNodeDisappear:
+			log.Printf("node disappeared: %s", evt.Node)
+
+		case *gomavlib.NodeEventFrame:
 			// route message to every other channel
 			node.WriteFrameExcept(evt.Channel, evt.Frame)
 
