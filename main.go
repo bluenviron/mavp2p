@@ -136,14 +136,13 @@ func main() {
 	node, err := gomavlib.NewNode(gomavlib.NodeConf{
 		Endpoints: econfs,
 		Dialect:   dialect,
-		Version: func() gomavlib.NodeVersion {
+		OutVersion: func() gomavlib.NodeVersion {
 			if *hbVersion == "2" {
 				return gomavlib.V2
 			}
 			return gomavlib.V1
 		}(),
-		SystemId:         byte(*hbSystemId),
-		ComponentId:      1,
+		OutSystemId:      byte(*hbSystemId),
 		HeartbeatDisable: *hbDisable,
 		HeartbeatPeriod:  (time.Duration(*hbPeriod) * time.Second),
 	})
