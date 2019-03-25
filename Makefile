@@ -27,11 +27,12 @@ release:
 		RUN apt-get update && apt-get install -y zip \n\
 		WORKDIR /src \n\
 		COPY go.mod go.sum ./ \n\
-		RUN go mod download" | docker build . -f - -t mavp2p-release \
-		&& docker run --rm -it \
-		-v $(PWD):/src \
-		mavp2p-release \
-		sh -c "make release-nodocker"
+		RUN go mod download \n\
+		COPY .git ./.git \n\
+		COPY *.go Makefile ./ \n\
+		RUN make release-nodocker" | docker build . -f - -t mavp2p-release \
+		&& docker run --rm -it -v $(PWD):/out \
+		mavp2p-release sh -c "rm -rf /out/release && cp -r /src/release /out/"
 
 release-nodocker:
 	$(eval VERSION := $(shell git describe --tags))
