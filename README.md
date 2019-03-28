@@ -19,7 +19,7 @@ Main features:
   * TCP (client or server mode)
 * Supports Mavlink 2.0 and 1.0, supports any dialect
 * Emits heartbeats
-* Request streams to Ardupilot devices and blocks stream requests from ground stations
+* Requests streams to Ardupilot devices and blocks stream requests from ground stations
 * Supports domain names in place of IPs
 * Reconnects to TCP/UDP servers when disconnected, removes inactive TCP/UDP clients
 * Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, armhf, amd64), not dependent on libc and compatible with lightweight distros (Alpine Linux)
