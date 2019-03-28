@@ -86,13 +86,13 @@ func main() {
 
 	hbDisable := kingpin.Flag("hb-disable", "disable heartbeats").Bool()
 	hbVersion := kingpin.Flag("hb-version", "set mavlink version of heartbeats").Default("1").Enum("1", "2")
-	hbSystemId := kingpin.Flag("hb-systemid", "set system id of heartbeats." +
+	hbSystemId := kingpin.Flag("hb-systemid", "set system id of heartbeats."+
 		"it is recommended to set a different system id for each router in the network.").Default("125").Int()
 	hbPeriod := kingpin.Flag("hb-period", "set period of heartbeats").Default("5").Int()
 
-	aprsDisable := kingpin.Flag("apreqstream-disable", "do not request streams to Ardupilot devices, " +
-		"that need an explicit request in order to emit telemetry streams. " +
-		"this task is usually delegated to the router, to avoid conflicts in case " +
+	aprsDisable := kingpin.Flag("apreqstream-disable", "do not request streams to Ardupilot devices, "+
+		"that need an explicit request in order to emit telemetry streams. "+
+		"this task is usually delegated to the router, to avoid conflicts in case "+
 		"multiple ground stations are active.").Bool()
 	aprsFrequency := kingpin.Flag("apreqstream-frequency", "set the stream frequency to request").Default("4").Int()
 
@@ -200,9 +200,9 @@ func main() {
 			// request streams to ardupilot devices
 			if *aprsDisable == false {
 				// request if node is ardupilot and new
-				if hb,ok := evt.Message().(*common.MessageHeartbeat); ok &&
-					hb.Autopilot == uint8(common.MAV_AUTOPILOT_ARDUPILOTMEGA) {
-					if _,ok := requestedStreams[evt.Node]; !ok {
+				if hb, ok := evt.Message().(*common.MessageHeartbeat); ok &&
+					hb.Autopilot == common.MAV_AUTOPILOT_ARDUPILOTMEGA {
+					if _, ok := requestedStreams[evt.Node]; !ok {
 						requestedStreams[evt.Node] = struct{}{}
 
 						// https://github.com/mavlink/qgroundcontrol/blob/08f400355a8f3acf1dd8ed91f7f1c757323ac182/src/FirmwarePlugin/APM/APMFirmwarePlugin.cc#L626
@@ -216,20 +216,20 @@ func main() {
 							common.MAV_DATA_STREAM_EXTRA3,
 						}
 
-						for _,stream := range streams {
+						for _, stream := range streams {
 							node.WriteMessageTo(evt.Channel, &common.MessageRequestDataStream{
-								TargetSystem: evt.SystemId(),
+								TargetSystem:    evt.SystemId(),
 								TargetComponent: evt.ComponentId(),
-								ReqStreamId: uint8(stream),
-								ReqMessageRate: uint16(*aprsFrequency),
-								StartStop: 1,
+								ReqStreamId:     uint8(stream),
+								ReqMessageRate:  uint16(*aprsFrequency),
+								StartStop:       1,
 							})
 						}
 					}
 				}
 
 				// stop requests from ground stations
-				if _,ok := evt.Message().(*common.MessageRequestDataStream); ok {
+				if _, ok := evt.Message().(*common.MessageRequestDataStream); ok {
 					continue
 				}
 			}

@@ -1,6 +1,6 @@
 module mavp2p
 
 require (
-	github.com/gswly/gomavlib v0.0.0-20190328160321-c746994c2a68
+	github.com/gswly/gomavlib v0.0.0-20190328230239-a0cccb33e47c
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
