@@ -84,10 +84,17 @@ func main() {
 	quiet := kingpin.Flag("quiet", "suppress info messages during execution.").Short('q').Bool()
 	printErrors := kingpin.Flag("print-errors", "print parse errors on screen.").Bool()
 
-	hbDisable := kingpin.Flag("hb-disable", "disable periodic heartbeats").Bool()
+	hbDisable := kingpin.Flag("hb-disable", "disable heartbeats").Bool()
 	hbVersion := kingpin.Flag("hb-version", "set mavlink version of heartbeats").Default("1").Enum("1", "2")
-	hbSystemId := kingpin.Flag("hb-systemid", "set system id of heartbeats. it is recommended to set a different system id for each router in the network.").Default("125").Int()
+	hbSystemId := kingpin.Flag("hb-systemid", "set system id of heartbeats." +
+		"it is recommended to set a different system id for each router in the network.").Default("125").Int()
 	hbPeriod := kingpin.Flag("hb-period", "set period of heartbeats").Default("5").Int()
+
+	aprsDisable := kingpin.Flag("apreqstream-disable", "do not request streams to Ardupilot devices, " +
+		"that need an explicit request in order to emit telemetry streams. " +
+		"this task is usually delegated to the router, to avoid conflicts in case " +
+		"multiple ground stations are active.").Bool()
+	aprsFrequency := kingpin.Flag("apreqstream-frequency", "set the stream frequency to request").Default("4").Int()
 
 	desc := "Space-separated list of endpoints. At least 2 endpoints are required. " +
 		"Possible endpoints are:\n\n"
@@ -124,10 +131,11 @@ func main() {
 		econfs = append(econfs, etype.make(args))
 	}
 
-	// decode/encode only heartbeat, needed for heartbeat to work.
+	// decode/encode only a minimal set of messages.
 	// other messages change too frequently and cannot be integrated into a static tool.
 	dialect, err := gomavlib.NewDialect([]gomavlib.Message{
 		&common.MessageHeartbeat{},
+		&common.MessageRequestDataStream{},
 	})
 	if err != nil {
 		initError(err.Error())
@@ -136,7 +144,7 @@ func main() {
 	node, err := gomavlib.NewNode(gomavlib.NodeConf{
 		Endpoints: econfs,
 		Dialect:   dialect,
-		OutVersion: func() gomavlib.NodeVersion {
+		OutVersion: func() gomavlib.Version {
 			if *hbVersion == "2" {
 				return gomavlib.V2
 			}
@@ -158,8 +166,8 @@ func main() {
 	log.Printf("mavp2p %s", Version)
 	log.Printf("router started with %d endpoints", len(econfs))
 
+	// print errors
 	errorCount := 0
-
 	if *printErrors == false {
 		go func() {
 			for {
@@ -172,25 +180,64 @@ func main() {
 		}()
 	}
 
+	requestedStreams := make(map[gomavlib.NodeIdentifier]struct{})
+
 	for e := range node.Events() {
 		switch evt := e.(type) {
-		case *gomavlib.NodeEventChannelOpen:
+		case *gomavlib.EventChannelOpen:
 			log.Printf("channel opened: %s", evt.Channel)
 
-		case *gomavlib.NodeEventChannelClose:
+		case *gomavlib.EventChannelClose:
 			log.Printf("channel closed: %s", evt.Channel)
 
-		case *gomavlib.NodeEventNodeAppear:
+		case *gomavlib.EventNodeAppear:
 			log.Printf("node appeared: %s", evt.Node)
 
-		case *gomavlib.NodeEventNodeDisappear:
+		case *gomavlib.EventNodeDisappear:
 			log.Printf("node disappeared: %s", evt.Node)
 
-		case *gomavlib.NodeEventFrame:
+		case *gomavlib.EventFrame:
+			// request streams to ardupilot devices
+			if *aprsDisable == false {
+				// request if node is ardupilot and new
+				if hb,ok := evt.Message().(*common.MessageHeartbeat); ok &&
+					hb.Autopilot == uint8(common.MAV_AUTOPILOT_ARDUPILOTMEGA) {
+					if _,ok := requestedStreams[evt.Node]; !ok {
+						requestedStreams[evt.Node] = struct{}{}
+
+						// https://github.com/mavlink/qgroundcontrol/blob/08f400355a8f3acf1dd8ed91f7f1c757323ac182/src/FirmwarePlugin/APM/APMFirmwarePlugin.cc#L626
+						streams := []common.MAV_DATA_STREAM{
+							common.MAV_DATA_STREAM_RAW_SENSORS,
+							common.MAV_DATA_STREAM_EXTENDED_STATUS,
+							common.MAV_DATA_STREAM_RC_CHANNELS,
+							common.MAV_DATA_STREAM_POSITION,
+							common.MAV_DATA_STREAM_EXTRA1,
+							common.MAV_DATA_STREAM_EXTRA2,
+							common.MAV_DATA_STREAM_EXTRA3,
+						}
+
+						for _,stream := range streams {
+							node.WriteMessageTo(evt.Channel, &common.MessageRequestDataStream{
+								TargetSystem: evt.SystemId(),
+								TargetComponent: evt.ComponentId(),
+								ReqStreamId: uint8(stream),
+								ReqMessageRate: uint16(*aprsFrequency),
+								StartStop: 1,
+							})
+						}
+					}
+				}
+
+				// stop requests from ground stations
+				if _,ok := evt.Message().(*common.MessageRequestDataStream); ok {
+					continue
+				}
+			}
+
 			// route message to every other channel
 			node.WriteFrameExcept(evt.Channel, evt.Frame)
 
-		case *gomavlib.NodeEventParseError:
+		case *gomavlib.EventParseError:
 			if *printErrors == true {
 				log.Printf("err: %s", evt.Error)
 			} else {

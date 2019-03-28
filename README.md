@@ -18,6 +18,8 @@ Main features:
   * UDP (client, server or broadcast mode)
   * TCP (client or server mode)
 * Supports Mavlink 2.0 and 1.0, supports any dialect
+* Emits heartbeats
+* Request streams to Ardupilot devices and blocks stream requests from ground stations
 * Supports domain names in place of IPs
 * Reconnects to TCP/UDP servers when disconnected, removes inactive TCP/UDP clients
 * Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, armhf, amd64), not dependent on libc and compatible with lightweight distros (Alpine Linux)
@@ -61,32 +63,40 @@ mavp2p v0.0.0
 Link together Mavlink endpoints.
 
 Flags:
-      --help             Show context-sensitive help (also try --help-long
-                         and --help-man).
-  -q, --quiet            suppress info messages during execution.
-      --print-errors     print parse errors on screen.
-      --hb-disable       disable periodic heartbeats
-      --hb-version=1     set mavlink version of heartbeats
-      --hb-systemid=125  set system id of heartbeats. it is recommended to
-                         set a different system id for each router in the
-                         network.
-      --hb-period=5      set period of heartbeats
+      --help                     Show context-sensitive help (also try
+                                 --help-long and --help-man).
+  -q, --quiet                    suppress info messages during
+                                 execution.
+      --print-errors             print parse errors on screen.
+      --hb-disable               disable heartbeats
+      --hb-version=1             set mavlink version of heartbeats
+      --hb-systemid=125          set system id of heartbeats.it is
+                                 recommended to set a different system
+                                 id for each router in the network.
+      --hb-period=5              set period of heartbeats
+      --apreqstream-disable      do not request streams to Ardupilot
+                                 devices, that need an explicit request
+                                 in order to emit telemetry streams.
+                                 this task is usually delegated to the
+                                 router, to avoid conflicts in case
+                                 multiple ground stations are active.
+      --apreqstream-frequency=4  set the stream frequency to request
 
 Args:
-  [<endpoints>]  Space-separated list of endpoints. At least 2 endpoints are
-                 required. Possible endpoints are:
-
-                 tcps:listen_ip:port (tcp, server mode)
-
-                 tcpc:dest_ip:port (tcp, client mode)
-
-                 serial:port:baudrate (serial)
+  [<endpoints>]  Space-separated list of endpoints. At least 2
+                 endpoints are required. Possible endpoints are:
 
                  udps:listen_ip:port (udp, server mode)
 
                  udpc:dest_ip:port (udp, client mode)
 
                  udpb:broadcast_ip:port (udp, broadcast mode)
+
+                 tcps:listen_ip:port (tcp, server mode)
+
+                 tcpc:dest_ip:port (tcp, client mode)
+
+                 serial:port:baudrate (serial)
 
 ```
 
