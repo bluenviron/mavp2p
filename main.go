@@ -180,7 +180,7 @@ func main() {
 		}()
 	}
 
-	requestedStreams := make(map[gomavlib.NodeIdentifier]struct{})
+	requestedStreams := make(map[gomavlib.RemoteNode]struct{})
 
 	for e := range node.Events() {
 		switch evt := e.(type) {
