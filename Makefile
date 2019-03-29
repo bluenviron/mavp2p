@@ -4,10 +4,10 @@ help:
 	@echo ""
 	@echo "available actions:"
 	@echo ""
-	@echo "  mod-tidy      run go mod tidy."
-	@echo "  format        format source files."
-	@echo "  release       build release assets for all platforms."
-	@echo "  travis-setup  set up travis for automatic releases."
+	@echo "  mod-tidy      run go mod tidy"
+	@echo "  format        format source files.
+	@echo "  release       build release assets for all platforms"
+	@echo "  travis-setup  set up travis for automatic releases"
 	@echo ""
 
 mod-tidy:
@@ -36,22 +36,22 @@ release:
 
 release-nodocker:
 	$(eval VERSION := $(shell git describe --tags))
-	$(eval LDFLAGS := -ldflags '-X "main.Version=$(VERSION)"')
+	$(eval GOBUILD := go build -ldflags '-X "main.Version=$(VERSION)"')
 	rm -rf release && mkdir release
 
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build $(LDFLAGS) -o /tmp/mavp2p.exe
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o /tmp/mavp2p.exe
 	cd /tmp && zip -q $(PWD)/release/mavp2p_$(VERSION)_windows_amd64.zip mavp2p.exe
 
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o /tmp/mavp2p
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o /tmp/mavp2p
 	tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_amd64.tar.gz --owner=0 --group=0 mavp2p
 
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 go build $(LDFLAGS) -o /tmp/mavp2p
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 $(GOBUILD) -o /tmp/mavp2p
 	tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_arm6.tar.gz --owner=0 --group=0 mavp2p
 
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build $(LDFLAGS) -o /tmp/mavp2p
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 $(GOBUILD) -o /tmp/mavp2p
 	tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_arm7.tar.gz --owner=0 --group=0 mavp2p
 
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o /tmp/mavp2p
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 $(GOBUILD) -o /tmp/mavp2p
 	tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_arm64.tar.gz --owner=0 --group=0 mavp2p
 
 travis-setup:

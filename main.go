@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"sync"
 	"time"
 )
 
@@ -67,9 +68,14 @@ var endpointTypes = map[string]endpointType{
 	},
 }
 
-type NodeId struct {
+type remoteNode struct {
+	Channel     *gomavlib.Channel
 	SystemId    byte
 	ComponentId byte
+}
+
+func (i remoteNode) String() string {
+	return fmt.Sprintf("chan=%s sid=%d cid=%d", i.Channel, i.SystemId, i.ComponentId)
 }
 
 func initError(msg string, args ...interface{}) {
@@ -166,8 +172,12 @@ func main() {
 	log.Printf("mavp2p %s", Version)
 	log.Printf("router started with %d endpoints", len(econfs))
 
-	// print errors
 	errorCount := 0
+	var remoteNodeMutex sync.Mutex
+	remoteNodes := make(map[remoteNode]time.Time)
+	requestedStreams := make(map[remoteNode]struct{})
+
+	// print errors
 	if *printErrors == false {
 		go func() {
 			for {
@@ -180,7 +190,22 @@ func main() {
 		}()
 	}
 
-	requestedStreams := make(map[gomavlib.RemoteNode]struct{})
+	// delete remote nodes after a period of inactivity
+	go func() {
+		for {
+			time.Sleep(10 * time.Second)
+			func() {
+				remoteNodeMutex.Lock()
+				defer remoteNodeMutex.Unlock()
+				for rnode, t := range remoteNodes {
+					if time.Since(t) >= (30 * time.Second) {
+						delete(remoteNodes, rnode)
+						log.Printf("node disappeared: %s", rnode)
+					}
+				}
+			}()
+		}
+	}()
 
 	for e := range node.Events() {
 		switch evt := e.(type) {
@@ -188,22 +213,47 @@ func main() {
 			log.Printf("channel opened: %s", evt.Channel)
 
 		case *gomavlib.EventChannelClose:
+			// delete remote nodes associated to channel
+			func() {
+				remoteNodeMutex.Lock()
+				defer remoteNodeMutex.Unlock()
+				for rnode := range remoteNodes {
+					if rnode.Channel == evt.Channel {
+						delete(remoteNodes, rnode)
+						log.Printf("node disappeared: %s", rnode)
+					}
+				}
+			}()
 			log.Printf("channel closed: %s", evt.Channel)
 
-		case *gomavlib.EventNodeAppear:
-			log.Printf("node appeared: %s", evt.Node)
-
-		case *gomavlib.EventNodeDisappear:
-			log.Printf("node disappeared: %s", evt.Node)
-
 		case *gomavlib.EventFrame:
+			// build remoteNode
+			rnode := remoteNode{
+				Channel:     evt.Channel,
+				SystemId:    evt.SystemId(),
+				ComponentId: evt.ComponentId(),
+			}
+
+			func() {
+				remoteNodeMutex.Lock()
+				defer remoteNodeMutex.Unlock()
+
+				// new remote node
+				if _, ok := remoteNodes[rnode]; !ok {
+					log.Printf("node appeared: %s", rnode)
+				}
+
+				// always update time
+				remoteNodes[rnode] = time.Now()
+			}()
+
 			// request streams to ardupilot devices
 			if *aprsDisable == false {
 				// request if node is ardupilot and new
 				if hb, ok := evt.Message().(*common.MessageHeartbeat); ok &&
 					hb.Autopilot == common.MAV_AUTOPILOT_ARDUPILOTMEGA {
-					if _, ok := requestedStreams[evt.Node]; !ok {
-						requestedStreams[evt.Node] = struct{}{}
+					if _, ok := requestedStreams[rnode]; !ok {
+						requestedStreams[rnode] = struct{}{}
 
 						// https://github.com/mavlink/qgroundcontrol/blob/08f400355a8f3acf1dd8ed91f7f1c757323ac182/src/FirmwarePlugin/APM/APMFirmwarePlugin.cc#L626
 						streams := []common.MAV_DATA_STREAM{
