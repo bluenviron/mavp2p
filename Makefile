@@ -5,13 +5,14 @@ help:
 	@echo "available actions:"
 	@echo ""
 	@echo "  mod-tidy      run go mod tidy"
-	@echo "  format        format source files.
+	@echo "  format        format source files"
 	@echo "  release       build release assets for all platforms"
 	@echo "  travis-setup  set up travis for automatic releases"
 	@echo ""
 
 mod-tidy:
-	docker run --rm -it -v $(PWD):/src amd64/golang:1.11 \
+	docker run --rm -it -v $(PWD):/src \
+		amd64/golang:1.11 \
 		sh -c "cd /src && go get -m ./... && go mod tidy"
 
 format:
