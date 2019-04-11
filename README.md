@@ -28,6 +28,7 @@ Advantages with respect to _mavproxy_:
 * Does not require python nor any interpreter
 * Much lower CPU and memory usage
 * Supports an arbitrary number of inputs and outputs
+* Logs can be disabled, resulting in no disk I/O
 
 Advantages with respect to _mavlink-router_:
 * Supports domain names
