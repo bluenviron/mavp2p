@@ -139,10 +139,14 @@ func main() {
 
 	// decode/encode only a minimal set of messages.
 	// other messages change too frequently and cannot be integrated into a static tool.
-	dialect, err := gomavlib.NewDialect([]gomavlib.Message{
-		&common.MessageHeartbeat{},
-		&common.MessageRequestDataStream{},
-	})
+	msgs := []gomavlib.Message{}
+	if *hbDisable == false {
+		msgs = append(msgs, &common.MessageHeartbeat{})
+	}
+	if *aprsDisable == false {
+		msgs = append(msgs, &common.MessageRequestDataStream{})
+	}
+	dialect, err := gomavlib.NewDialect(3, msgs)
 	if err != nil {
 		initError(err.Error())
 	}
