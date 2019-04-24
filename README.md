@@ -67,9 +67,9 @@ Flags:
       --help                     Show context-sensitive help (also try
                                  --help-long and --help-man).
       --version                  print mavp2p version
-  -q, --quiet                    suppress info messages during
-                                 execution
-      --print-errors             print parse errors on screen
+  -q, --quiet                    suppress info messages
+      --print                    print routed frames
+      --print-errors             print parse errors
       --hb-disable               disable heartbeats
       --hb-version=1             set mavlink version of heartbeats
       --hb-systemid=125          set system id of heartbeats. it is

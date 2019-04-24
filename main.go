@@ -89,8 +89,9 @@ func main() {
 
 	version := kingpin.Flag("version", "print mavp2p version").Bool()
 
-	quiet := kingpin.Flag("quiet", "suppress info messages during execution").Short('q').Bool()
-	printErrors := kingpin.Flag("print-errors", "print parse errors on screen").Bool()
+	quiet := kingpin.Flag("quiet", "suppress info messages").Short('q').Bool()
+	print := kingpin.Flag("print", "print routed frames").Bool()
+	printErrors := kingpin.Flag("print-errors", "print parse errors").Bool()
 
 	hbDisable := kingpin.Flag("hb-disable", "disable heartbeats").Bool()
 	hbVersion := kingpin.Flag("hb-version", "set mavlink version of heartbeats").Default("1").Enum("1", "2")
@@ -239,6 +240,12 @@ func main() {
 			log.Printf("channel closed: %s", evt.Channel)
 
 		case *gomavlib.EventFrame:
+			// print
+			if *print == true {
+				fmt.Printf("V=%T, %+v, ID=%d, %+v", evt.Frame, evt.Frame,
+					evt.Message().GetId(), evt.Message())
+			}
+
 			// build remoteNode
 			rnode := remoteNode{
 				Channel:     evt.Channel,
