@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  sim:
+    build: ./dronekit
+
+  bridge:
+    build: ./mavp2p
+    read_only: yes
+    command: >
+      --hb-systemid=135
+      tcpc:sim:5760
+      udps:0.0.0.0:14550
+    ports:
+    - '5600:5600/udp'

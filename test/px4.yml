@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+  sim:
+    tty: true
+    build: ./px4
+
+  bridge:
+    build:
+      context: ../
+      dockerfile: mavp2p/dockerfile
+    read_only: yes
+    command: >
+      --hb-systemid=135
+      udps:0.0.0.0:14550
+    ports:
+    - '5600:5600/udp'

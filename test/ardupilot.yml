@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  sim:
+    build: ./ardupilot
+
+  bridge:
+    build:
+      context: ../
+      dockerfile: test/mavp2p/Dockerfile
+    read_only: yes
+    command: >
+      --hb-systemid=135
+      --print-errors
+      tcpc:sim:5760
+      udps:0.0.0.0:5600
+    ports:
+    - '5600:5600/udp'
