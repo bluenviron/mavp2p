@@ -308,7 +308,7 @@ func main() {
 
 		case *gomavlib.EventParseError:
 			if *printErrors == true {
-				log.Printf("err: %s", evt.Error)
+				log.Printf("ERR: %s", evt.Error)
 			} else {
 				errorCount++
 			}
