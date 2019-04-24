@@ -242,8 +242,7 @@ func main() {
 		case *gomavlib.EventFrame:
 			// print
 			if *print == true {
-				fmt.Printf("V=%T, %+v, ID=%d, %+v", evt.Frame, evt.Frame,
-					evt.Message().GetId(), evt.Message())
+				fmt.Printf("%#v, %#v\n", evt.Frame, evt.Message())
 			}
 
 			// build remoteNode
