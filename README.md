@@ -66,21 +66,22 @@ Link together Mavlink endpoints.
 Flags:
       --help                     Show context-sensitive help (also try
                                  --help-long and --help-man).
+      --version                  print mavp2p version
   -q, --quiet                    suppress info messages during
-                                 execution.
-      --print-errors             print parse errors on screen.
+                                 execution
+      --print-errors             print parse errors on screen
       --hb-disable               disable heartbeats
       --hb-version=1             set mavlink version of heartbeats
-      --hb-systemid=125          set system id of heartbeats.it is
+      --hb-systemid=125          set system id of heartbeats. it is
                                  recommended to set a different system
-                                 id for each router in the network.
+                                 id for each router in the network
       --hb-period=5              set period of heartbeats
       --apreqstream-disable      do not request streams to Ardupilot
                                  devices, that need an explicit request
                                  in order to emit telemetry streams.
                                  this task is usually delegated to the
                                  router, to avoid conflicts in case
-                                 multiple ground stations are active.
+                                 multiple ground stations are active
       --apreqstream-frequency=4  set the stream frequency to request
 
 Args:

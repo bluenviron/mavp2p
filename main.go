@@ -87,12 +87,14 @@ func main() {
 	kingpin.CommandLine.Help = "mavp2p " + Version + "\n\n" +
 		"Link together Mavlink endpoints."
 
-	quiet := kingpin.Flag("quiet", "suppress info messages during execution.").Short('q').Bool()
-	printErrors := kingpin.Flag("print-errors", "print parse errors on screen.").Bool()
+	version := kingpin.Flag("version", "print mavp2p version").Bool()
+
+	quiet := kingpin.Flag("quiet", "suppress info messages during execution").Short('q').Bool()
+	printErrors := kingpin.Flag("print-errors", "print parse errors on screen").Bool()
 
 	hbDisable := kingpin.Flag("hb-disable", "disable heartbeats").Bool()
 	hbVersion := kingpin.Flag("hb-version", "set mavlink version of heartbeats").Default("1").Enum("1", "2")
-	hbSystemId := kingpin.Flag("hb-systemid", "set system id of heartbeats."+
+	hbSystemId := kingpin.Flag("hb-systemid", "set system id of heartbeats"+
 		"it is recommended to set a different system id for each router in the network.").Default("125").Int()
 	hbPeriod := kingpin.Flag("hb-period", "set period of heartbeats").Default("5").Int()
 
@@ -109,13 +111,19 @@ func main() {
 	}
 	endpoints := kingpin.Arg("endpoints", desc).Strings()
 
+	kingpin.Parse()
+
+	// print version
+	if *version == true {
+		fmt.Println("mavp2p " + Version)
+		os.Exit(0)
+	}
+
 	// print usage if no args are provided
 	if len(os.Args) <= 1 {
 		kingpin.Usage()
 		os.Exit(1)
 	}
-
-	kingpin.Parse()
 
 	if len(*endpoints) < 2 {
 		initError("at least 2 endpoints are required")
