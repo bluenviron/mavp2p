@@ -57,7 +57,7 @@ Link a UDP endpoint in broadcast mode with a TCP endpoint in client mode:
 
 Full command-line usage:
 ```
-usage: run [<flags>] [<endpoints>...]
+usage: mavp2p [<flags>] [<endpoints>...]
 
 mavp2p v0.0.0
 
