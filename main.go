@@ -101,7 +101,7 @@ func main() {
 
 	aprsDisable := kingpin.Flag("apreqstream-disable", "do not request streams to Ardupilot devices, "+
 		"that need an explicit request in order to emit telemetry streams. "+
-		"this task is usually delegated to the router, to avoid conflicts in case "+
+		"this task is usually delegated to the router, to avoid conflicts when "+
 		"multiple ground stations are active.").Bool()
 	aprsFrequency := kingpin.Flag("apreqstream-frequency", "set the stream frequency to request").Default("4").Int()
 

@@ -80,7 +80,7 @@ Flags:
                                  devices, that need an explicit request
                                  in order to emit telemetry streams.
                                  this task is usually delegated to the
-                                 router, to avoid conflicts in case
+                                 router, to avoid conflicts when
                                  multiple ground stations are active
       --apreqstream-frequency=4  set the stream frequency to request
 
