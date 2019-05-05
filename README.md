@@ -22,7 +22,7 @@ Main features:
 * Requests streams to Ardupilot devices and blocks stream requests from ground stations
 * Supports domain names in place of IPs
 * Reconnects to TCP/UDP servers when disconnected, removes inactive TCP/UDP clients
-* Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, armhf, amd64), not dependent on libc and compatible with lightweight distros (Alpine Linux)
+* Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, armhf, amd64), does not depend on libc and therefore is compatible with lightweight distros (Alpine Linux)
 
 Advantages with respect to _mavproxy_:
 * Does not require python nor any interpreter
