@@ -69,7 +69,8 @@ Flags:
       --version                  print mavp2p version
   -q, --quiet                    suppress info messages
       --print                    print routed frames
-      --print-errors             print parse errors
+      --print-errors             print parse errors individually, instead of
+                                 printing only their quantity every 5 seconds
       --hb-disable               disable heartbeats
       --hb-version=1             set mavlink version of heartbeats
       --hb-systemid=125          set system id of heartbeats. it is
