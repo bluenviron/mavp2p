@@ -52,7 +52,7 @@ Link a serial port with a UDP endpoint in server mode:
 
 Link a UDP endpoint in broadcast mode with a TCP endpoint in client mode:
 ```
-./mavp2p udpb:192.168.7.255 tcpc:exampleendpoint.com:5600
+./mavp2p udpb:192.168.7.255:5601 tcpc:exampleendpoint.com:5600
 ```
 
 Full command-line usage:
