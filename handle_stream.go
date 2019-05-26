@@ -4,11 +4,18 @@ import (
 	"github.com/gswly/gomavlib"
 	"github.com/gswly/gomavlib/dialects/common"
 	"log"
+	"time"
+)
+
+const (
+	STREAM_REQUEST_AGAIN_AFTER_INACTIVITY = 30 * time.Second
 )
 
 type streamHandler struct {
-	aprsFrequency    int
-	requestedStreams map[remoteNode]struct{}
+	aprsFrequency int
+	// we can't use nodeHandler's remoteNodes
+	// since we specifically track heartbeats, not generic frames
+	lastHeartbeats map[remoteNode]time.Time
 }
 
 func newStreamHandler(aprsDisable bool, aprsFrequency int) (*streamHandler, error) {
@@ -17,21 +24,35 @@ func newStreamHandler(aprsDisable bool, aprsFrequency int) (*streamHandler, erro
 	}
 
 	sh := &streamHandler{
-		aprsFrequency:    aprsFrequency,
-		requestedStreams: make(map[remoteNode]struct{}),
+		aprsFrequency:  aprsFrequency,
+		lastHeartbeats: make(map[remoteNode]time.Time),
 	}
 
 	return sh, nil
 }
 
 func (sh *streamHandler) onEventFrame(node *gomavlib.Node, evt *gomavlib.EventFrame, rnode remoteNode) bool {
-	// request streams to ardupilot devices
-	// if they are new or not seen in some time
+	// node is an ardupilot device
 	if hb, ok := evt.Message().(*common.MessageHeartbeat); ok &&
 		hb.Autopilot == common.MAV_AUTOPILOT_ARDUPILOTMEGA {
-		if _, ok := sh.requestedStreams[rnode]; !ok {
-			sh.requestedStreams[rnode] = struct{}{}
+		now := time.Now()
 
+		// request streams if node is new or not seen in some time
+		request := false
+		if _, ok := sh.lastHeartbeats[rnode]; !ok {
+			sh.lastHeartbeats[rnode] = time.Now()
+			request = true
+
+		} else {
+			if now.Sub(sh.lastHeartbeats[rnode]) >= STREAM_REQUEST_AGAIN_AFTER_INACTIVITY {
+				request = true
+			}
+
+			// always update last seen
+			sh.lastHeartbeats[rnode] = now
+		}
+
+		if request == true {
 			log.Printf("requesting streams to %s", rnode)
 
 			// https://github.com/mavlink/qgroundcontrol/blob/08f400355a8f3acf1dd8ed91f7f1c757323ac182/src/FirmwarePlugin/APM/APMFirmwarePlugin.cc#L626

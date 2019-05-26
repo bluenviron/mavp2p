@@ -29,12 +29,14 @@ func (nh *nodeHandler) run() {
 	for {
 		time.Sleep(10 * time.Second)
 
+		now := time.Now()
+
 		func() {
 			nh.remoteNodeMutex.Lock()
 			defer nh.remoteNodeMutex.Unlock()
 
 			for rnode, t := range nh.remoteNodes {
-				if time.Since(t) >= NODE_INACTIVE_AFTER {
+				if now.Sub(t) >= NODE_INACTIVE_AFTER {
 					log.Printf("node disappeared: %s", rnode)
 					delete(nh.remoteNodes, rnode)
 				}
