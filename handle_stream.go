@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gswly/gomavlib"
 	"github.com/gswly/gomavlib/dialects/common"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -11,11 +13,22 @@ const (
 	STREAM_REQUEST_AGAIN_AFTER_INACTIVITY = 30 * time.Second
 )
 
+type streamNode struct {
+	Channel     *gomavlib.Channel
+	SystemId    byte
+	ComponentId byte
+}
+
+func (i streamNode) String() string {
+	return fmt.Sprintf("chan=%s sid=%d cid=%d", i.Channel, i.SystemId, i.ComponentId)
+}
+
 type streamHandler struct {
 	aprsFrequency int
 	// we can't use nodeHandler's remoteNodes
 	// since we specifically track heartbeats, not generic frames
-	lastHeartbeats map[remoteNode]time.Time
+	lastHeartbeatsMutex sync.Mutex
+	lastHeartbeats      map[streamNode]time.Time
 }
 
 func newStreamHandler(aprsDisable bool, aprsFrequency int) (*streamHandler, error) {
@@ -25,35 +38,67 @@ func newStreamHandler(aprsDisable bool, aprsFrequency int) (*streamHandler, erro
 
 	sh := &streamHandler{
 		aprsFrequency:  aprsFrequency,
-		lastHeartbeats: make(map[remoteNode]time.Time),
+		lastHeartbeats: make(map[streamNode]time.Time),
 	}
 
 	return sh, nil
 }
 
-func (sh *streamHandler) onEventFrame(node *gomavlib.Node, evt *gomavlib.EventFrame, rnode remoteNode) bool {
-	// node is an ardupilot device
+func (sh *streamHandler) run() {
+	// periodic cleanup
+	for {
+		time.Sleep(10 * time.Second)
+
+		now := time.Now()
+
+		func() {
+			sh.lastHeartbeatsMutex.Lock()
+			defer sh.lastHeartbeatsMutex.Unlock()
+
+			for rnode, t := range sh.lastHeartbeats {
+				if now.Sub(t) >= STREAM_REQUEST_AGAIN_AFTER_INACTIVITY {
+					delete(sh.lastHeartbeats, rnode)
+				}
+			}
+		}()
+	}
+}
+
+func (sh *streamHandler) onEventFrame(node *gomavlib.Node, evt *gomavlib.EventFrame) bool {
+	// message is heartbeat and node is an ardupilot device
 	if hb, ok := evt.Message().(*common.MessageHeartbeat); ok &&
 		hb.Autopilot == common.MAV_AUTOPILOT_ARDUPILOTMEGA {
-		now := time.Now()
+
+		rnode := streamNode{
+			Channel:     evt.Channel,
+			SystemId:    evt.SystemId(),
+			ComponentId: evt.ComponentId(),
+		}
 
 		// request streams if node is new or not seen in some time
 		request := false
-		if _, ok := sh.lastHeartbeats[rnode]; !ok {
-			sh.lastHeartbeats[rnode] = time.Now()
-			request = true
+		func() {
+			sh.lastHeartbeatsMutex.Lock()
+			defer sh.lastHeartbeatsMutex.Unlock()
 
-		} else {
-			if now.Sub(sh.lastHeartbeats[rnode]) >= STREAM_REQUEST_AGAIN_AFTER_INACTIVITY {
+			now := time.Now()
+
+			if _, ok := sh.lastHeartbeats[rnode]; !ok {
+				sh.lastHeartbeats[rnode] = time.Now()
 				request = true
-			}
 
-			// always update last seen
-			sh.lastHeartbeats[rnode] = now
-		}
+			} else {
+				if now.Sub(sh.lastHeartbeats[rnode]) >= STREAM_REQUEST_AGAIN_AFTER_INACTIVITY {
+					request = true
+				}
+
+				// always update last seen
+				sh.lastHeartbeats[rnode] = now
+			}
+		}()
 
 		if request == true {
-			log.Printf("requesting streams to %s", rnode)
+			log.Printf("requesting streams from %s", rnode)
 
 			// https://github.com/mavlink/qgroundcontrol/blob/08f400355a8f3acf1dd8ed91f7f1c757323ac182/src/FirmwarePlugin/APM/APMFirmwarePlugin.cc#L626
 			streams := []common.MAV_DATA_STREAM{

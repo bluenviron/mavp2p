@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gswly/gomavlib"
 	"log"
 	"sync"
@@ -10,6 +11,16 @@ import (
 const (
 	NODE_INACTIVE_AFTER = 30 * time.Second
 )
+
+type remoteNode struct {
+	Channel     *gomavlib.Channel
+	SystemId    byte
+	ComponentId byte
+}
+
+func (i remoteNode) String() string {
+	return fmt.Sprintf("chan=%s sid=%d cid=%d", i.Channel, i.SystemId, i.ComponentId)
+}
 
 type nodeHandler struct {
 	remoteNodeMutex sync.Mutex
@@ -45,8 +56,7 @@ func (nh *nodeHandler) run() {
 	}
 }
 
-func (nh *nodeHandler) onEventFrame(evt *gomavlib.EventFrame) remoteNode {
-	// build remoteNode
+func (nh *nodeHandler) onEventFrame(evt *gomavlib.EventFrame) {
 	rnode := remoteNode{
 		Channel:     evt.Channel,
 		SystemId:    evt.SystemId(),
@@ -63,8 +73,6 @@ func (nh *nodeHandler) onEventFrame(evt *gomavlib.EventFrame) remoteNode {
 
 	// always update time
 	nh.remoteNodes[rnode] = time.Now()
-
-	return rnode
 }
 
 func (nh *nodeHandler) onEventChannelClose(evt *gomavlib.EventChannelClose) {

@@ -67,16 +67,6 @@ var endpointTypes = map[string]endpointType{
 	},
 }
 
-type remoteNode struct {
-	Channel     *gomavlib.Channel
-	SystemId    byte
-	ComponentId byte
-}
-
-func (i remoteNode) String() string {
-	return fmt.Sprintf("chan=%s sid=%d cid=%d", i.Channel, i.SystemId, i.ComponentId)
-}
-
 func initError(msg string, args ...interface{}) {
 	fmt.Fprintf(os.Stderr, "ERROR: "+msg+"\n", args...)
 	os.Exit(1)
@@ -201,6 +191,9 @@ func main() {
 
 	go eh.run()
 	go nh.run()
+	if sh != nil {
+		go sh.run()
+	}
 
 	for e := range node.Events() {
 		switch evt := e.(type) {
@@ -216,10 +209,10 @@ func main() {
 				fmt.Printf("%#v, %#v\n", evt.Frame, evt.Message())
 			}
 
-			rnode := nh.onEventFrame(evt)
+			nh.onEventFrame(evt)
 
 			if sh != nil {
-				if block := sh.onEventFrame(node, evt, rnode); block {
+				if block := sh.onEventFrame(node, evt); block {
 					continue
 				}
 			}
