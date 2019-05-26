@@ -1,10 +1,10 @@
 package main
 
 import (
-	"log"
-	"time"
-	"sync"
 	"github.com/gswly/gomavlib"
+	"log"
+	"sync"
+	"time"
 )
 
 const (

@@ -3,10 +3,11 @@ package main
 import (
 	"github.com/gswly/gomavlib"
 	"github.com/gswly/gomavlib/dialects/common"
+	"log"
 )
 
 type streamHandler struct {
-	aprsFrequency int
+	aprsFrequency    int
 	requestedStreams map[remoteNode]struct{}
 }
 
@@ -16,7 +17,7 @@ func newStreamHandler(aprsDisable bool, aprsFrequency int) (*streamHandler, erro
 	}
 
 	sh := &streamHandler{
-		aprsFrequency: aprsFrequency,
+		aprsFrequency:    aprsFrequency,
 		requestedStreams: make(map[remoteNode]struct{}),
 	}
 
@@ -30,6 +31,8 @@ func (sh *streamHandler) onEventFrame(node *gomavlib.Node, evt *gomavlib.EventFr
 		hb.Autopilot == common.MAV_AUTOPILOT_ARDUPILOTMEGA {
 		if _, ok := sh.requestedStreams[rnode]; !ok {
 			sh.requestedStreams[rnode] = struct{}{}
+
+			log.Printf("requesting streams to %s", rnode)
 
 			// https://github.com/mavlink/qgroundcontrol/blob/08f400355a8f3acf1dd8ed91f7f1c757323ac182/src/FirmwarePlugin/APM/APMFirmwarePlugin.cc#L626
 			streams := []common.MAV_DATA_STREAM{
