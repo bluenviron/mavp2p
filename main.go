@@ -138,7 +138,7 @@ func main() {
 	// decode/encode only a minimal set of messages.
 	// other messages change too frequently and cannot be integrated into a static tool.
 	msgs := []gomavlib.Message{}
-	if *hbDisable == false {
+	if *hbDisable == false || *aprsDisable == false {
 		msgs = append(msgs, &common.MessageHeartbeat{})
 	}
 	if *aprsDisable == false {
@@ -158,9 +158,11 @@ func main() {
 			}
 			return gomavlib.V1
 		}(),
-		OutSystemId:      byte(*hbSystemId),
-		HeartbeatDisable: *hbDisable,
-		HeartbeatPeriod:  (time.Duration(*hbPeriod) * time.Second),
+		OutSystemId:            byte(*hbSystemId),
+		HeartbeatDisable:       *hbDisable,
+		HeartbeatPeriod:        (time.Duration(*hbPeriod) * time.Second),
+		StreamRequestEnable:    !*aprsDisable,
+		StreamRequestFrequency: *aprsFrequency,
 	})
 	if err != nil {
 		initError(err.Error())
@@ -177,11 +179,6 @@ func main() {
 		initError(err.Error())
 	}
 
-	sh, err := newStreamHandler(*aprsDisable, *aprsFrequency)
-	if err != nil {
-		initError(err.Error())
-	}
-
 	if *quiet == true {
 		log.SetOutput(ioutil.Discard)
 	}
@@ -191,9 +188,6 @@ func main() {
 
 	go eh.run()
 	go nh.run()
-	if sh != nil {
-		go sh.run()
-	}
 
 	for e := range node.Events() {
 		switch evt := e.(type) {
@@ -204,6 +198,10 @@ func main() {
 			log.Printf("channel closed: %s", evt.Channel)
 			nh.onEventChannelClose(evt)
 
+		case *gomavlib.EventStreamRequested:
+			log.Printf("stream requested to chan=%s sid=%d cid=%d", evt.Channel,
+				evt.SystemId, evt.ComponentId)
+
 		case *gomavlib.EventFrame:
 			if *print == true {
 				fmt.Printf("%#v, %#v\n", evt.Frame, evt.Message())
@@ -211,8 +209,9 @@ func main() {
 
 			nh.onEventFrame(evt)
 
-			if sh != nil {
-				if block := sh.onEventFrame(node, evt); block {
+			// if automatic stream requests are enabled, block manual stream requests
+			if *aprsDisable == false {
+				if _, ok := evt.Message().(*common.MessageRequestDataStream); ok {
 					continue
 				}
 			}
