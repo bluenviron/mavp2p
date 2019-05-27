@@ -88,11 +88,11 @@ func main() {
 		"it is recommended to set a different system id for each router in the network.").Default("125").Int()
 	hbPeriod := kingpin.Flag("hb-period", "set period of heartbeats").Default("5").Int()
 
-	aprsDisable := kingpin.Flag("apreqstream-disable", "do not request streams to Ardupilot devices, "+
+	streamReqDisable := kingpin.Flag("streamreq-disable", "do not request streams to Ardupilot devices, "+
 		"that need an explicit request in order to emit telemetry streams. "+
-		"this task is usually delegated to the router, to avoid conflicts when "+
+		"this task is usually delegated to the router, in order to avoid conflicts when "+
 		"multiple ground stations are active.").Bool()
-	aprsFrequency := kingpin.Flag("apreqstream-frequency", "set the stream frequency to request").Default("4").Int()
+	streamReqFrequency := kingpin.Flag("streamreq-frequency", "set the stream frequency to request").Default("4").Int()
 
 	desc := "Space-separated list of endpoints. At least 2 endpoints are required. " +
 		"Possible endpoints are:\n\n"
@@ -138,10 +138,10 @@ func main() {
 	// decode/encode only a minimal set of messages.
 	// other messages change too frequently and cannot be integrated into a static tool.
 	msgs := []gomavlib.Message{}
-	if *hbDisable == false || *aprsDisable == false {
+	if *hbDisable == false || *streamReqDisable == false {
 		msgs = append(msgs, &common.MessageHeartbeat{})
 	}
-	if *aprsDisable == false {
+	if *streamReqDisable == false {
 		msgs = append(msgs, &common.MessageRequestDataStream{})
 	}
 	dialect, err := gomavlib.NewDialect(3, msgs)
@@ -161,8 +161,8 @@ func main() {
 		OutSystemId:            byte(*hbSystemId),
 		HeartbeatDisable:       *hbDisable,
 		HeartbeatPeriod:        (time.Duration(*hbPeriod) * time.Second),
-		StreamRequestEnable:    !*aprsDisable,
-		StreamRequestFrequency: *aprsFrequency,
+		StreamRequestEnable:    !*streamReqDisable,
+		StreamRequestFrequency: *streamReqFrequency,
 	})
 	if err != nil {
 		initError(err.Error())
@@ -210,7 +210,7 @@ func main() {
 			nh.onEventFrame(evt)
 
 			// if automatic stream requests are enabled, block manual stream requests
-			if *aprsDisable == false {
+			if *streamReqDisable == false {
 				if _, ok := evt.Message().(*common.MessageRequestDataStream); ok {
 					continue
 				}

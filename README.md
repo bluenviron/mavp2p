@@ -77,13 +77,13 @@ Flags:
                                  recommended to set a different system
                                  id for each router in the network
       --hb-period=5              set period of heartbeats
-      --apreqstream-disable      do not request streams to Ardupilot
+      --streamreq-disable        do not request streams to Ardupilot
                                  devices, that need an explicit request
                                  in order to emit telemetry streams.
                                  this task is usually delegated to the
-                                 router, to avoid conflicts when
+                                 router, in order to avoid conflicts when
                                  multiple ground stations are active
-      --apreqstream-frequency=4  set the stream frequency to request
+      --streamreq-frequency=4    set the stream frequency to request
 
 Args:
   [<endpoints>]  Space-separated list of endpoints. At least 2
