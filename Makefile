@@ -12,28 +12,28 @@ help:
 
 mod-tidy:
 	docker run --rm -it -v $(PWD):/src \
-		amd64/golang:1.11 \
-		sh -c "cd /src && go get -m ./... && go mod tidy"
+	amd64/golang:1.11 \
+	sh -c "cd /src && go get -m ./... && go mod tidy"
 
 format:
 	@docker run --rm -it \
-		-v $(PWD):/src \
-		amd64/golang:1.11-stretch \
-		sh -c "cd /src \
-		&& find . -type f -name '*.go' | xargs gofmt -l -w -s"
+	-v $(PWD):/src \
+	amd64/golang:1.11-stretch \
+	sh -c "cd /src \
+	&& find . -type f -name '*.go' | xargs gofmt -l -w -s"
 
 .PHONY: release
 release:
 	echo "FROM amd64/golang:1.11-stretch \n\
-		RUN apt-get update && apt-get install -y zip \n\
-		WORKDIR /src \n\
-		COPY go.mod go.sum ./ \n\
-		RUN go mod download \n\
-		COPY .git ./.git \n\
-		COPY *.go Makefile ./ \n\
-		RUN make release-nodocker" | docker build . -f - -t mavp2p-release \
-		&& docker run --rm -it -v $(PWD):/out \
-		mavp2p-release sh -c "rm -rf /out/release && cp -r /src/release /out/"
+	RUN apt-get update && apt-get install -y zip \n\
+	WORKDIR /src \n\
+	COPY go.mod go.sum ./ \n\
+	RUN go mod download \n\
+	COPY .git ./.git \n\
+	COPY *.go Makefile ./ \n\
+	RUN make release-nodocker" | docker build . -f - -t mavp2p-release \
+	&& docker run --rm -it -v $(PWD):/out \
+	mavp2p-release sh -c "rm -rf /out/release && cp -r /src/release /out/"
 
 release-nodocker:
 	$(eval VERSION := $(shell git describe --tags))
@@ -57,10 +57,10 @@ release-nodocker:
 
 travis-setup:
 	@echo "FROM ruby:alpine \n\
-		RUN apk add --no-cache build-base git \n\
-		RUN gem install travis" | docker build - -t mavp2p-travis-sr \
-		&& docker run --rm -it \
-		-v $(PWD):/src \
-		mavp2p-travis-sr \
-		sh -c "cd /src \
-		&& travis setup releases"
+	RUN apk add --no-cache build-base git \n\
+	RUN gem install travis" | docker build - -t mavp2p-travis-sr \
+	&& docker run --rm -it \
+	-v $(PWD):/src \
+	mavp2p-travis-sr \
+	sh -c "cd /src \
+	&& travis setup releases"
