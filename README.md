@@ -29,10 +29,12 @@ Advantages with respect to _mavproxy_:
 * Much lower CPU and memory usage
 * Supports an arbitrary number of inputs and outputs
 * Logs can be disabled, resulting in no disk I/O
+* UDP clients are removed when inactive
 
 Advantages with respect to _mavlink-router_:
 * Supports domain names
 * Supports multiple TCP servers
+* UDP clients are removed when inactive
 
 ## Installation
 
