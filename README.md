@@ -35,6 +35,7 @@ Advantages with respect to _mavlink-router_:
 * Supports domain names
 * Supports multiple TCP servers
 * UDP clients are removed when inactive
+* Supports automatic stream requests to Ardupilot devices
 
 ## Installation
 
@@ -55,6 +56,11 @@ Link a serial port with a UDP endpoint in server mode:
 Link a UDP endpoint in broadcast mode with a TCP endpoint in client mode:
 ```
 ./mavp2p udpb:192.168.7.255:5601 tcpc:exampleendpoint.com:5600
+```
+
+Create a server that links together all UDP endpoints that connects to it:
+```
+./mavp2p udps:0.0.0.0:5600
 ```
 
 Full command-line usage:
@@ -88,8 +94,8 @@ Flags:
       --streamreq-frequency=4    set the stream frequency to request
 
 Args:
-  [<endpoints>]  Space-separated list of endpoints. At least 2
-                 endpoints are required. Possible endpoints are:
+  [<endpoints>]  Space-separated list of endpoints. At least one
+                 endpoint is required. Possible endpoints types are:
 
                  udps:listen_ip:port (udp, server mode)
 

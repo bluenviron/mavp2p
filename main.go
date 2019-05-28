@@ -94,8 +94,8 @@ func main() {
 		"multiple ground stations are active.").Bool()
 	streamReqFrequency := kingpin.Flag("streamreq-frequency", "set the stream frequency to request").Default("4").Int()
 
-	desc := "Space-separated list of endpoints. At least 2 endpoints are required. " +
-		"Possible endpoints are:\n\n"
+	desc := "Space-separated list of endpoints. At least one endpoint is required. " +
+		"Possible endpoints types are:\n\n"
 	for k, etype := range endpointTypes {
 		desc += fmt.Sprintf("%s:%s (%s)\n\n", k, etype.args, etype.desc)
 	}
@@ -115,8 +115,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	if len(*endpoints) < 2 {
-		initError("at least 2 endpoints are required")
+	if len(*endpoints) < 1 {
+		initError("at least one endpoint is required")
 	}
 
 	var econfs []gomavlib.EndpointConf
