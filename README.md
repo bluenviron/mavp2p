@@ -58,7 +58,7 @@ Link a UDP endpoint in broadcast mode with a TCP endpoint in client mode:
 ./mavp2p udpb:192.168.7.255:5601 tcpc:exampleendpoint.com:5600
 ```
 
-Create a server that links together all UDP endpoints that connects to it:
+Create a server that links together all UDP endpoints that connect to it:
 ```
 ./mavp2p udps:0.0.0.0:5600
 ```
