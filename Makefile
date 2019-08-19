@@ -1,4 +1,6 @@
 
+BASE_IMAGE = amd64/golang:1.12-stretch
+
 help:
 	@echo "usage: make [action] [args...]"
 	@echo ""
@@ -11,20 +13,17 @@ help:
 	@echo ""
 
 mod-tidy:
-	docker run --rm -it -v $(PWD):/src \
-	amd64/golang:1.11 \
+	docker run --rm -it -v $(PWD):/src $(BASE_IMAGE) \
 	sh -c "cd /src && go get -m ./... && go mod tidy"
 
 format:
-	@docker run --rm -it \
-	-v $(PWD):/src \
-	amd64/golang:1.11-stretch \
+	@docker run --rm -it -v $(PWD):/src $(BASE_IMAGE) \
 	sh -c "cd /src \
 	&& find . -type f -name '*.go' | xargs gofmt -l -w -s"
 
 .PHONY: release
 release:
-	echo "FROM amd64/golang:1.11-stretch \n\
+	echo "FROM $(BASE_IMAGE) \n\
 	RUN apt-get update && apt-get install -y zip \n\
 	WORKDIR /src \n\
 	COPY go.mod go.sum ./ \n\
