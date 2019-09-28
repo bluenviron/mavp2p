@@ -1,4 +1,6 @@
 
+.PHONY: $(shell ls)
+
 BASE_IMAGE = amd64/golang:1.12-stretch
 
 help:
@@ -21,7 +23,6 @@ format:
 	sh -c "cd /src \
 	&& find . -type f -name '*.go' | xargs gofmt -l -w -s"
 
-.PHONY: release
 release:
 	echo "FROM $(BASE_IMAGE) \n\
 	RUN apt-get update && apt-get install -y zip \n\
