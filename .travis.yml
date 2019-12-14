@@ -1,17 +1,10 @@
-language: go
+language: minimal
 
-go:
-- 1.12.x
-
-env:
-- GO111MODULE=on
-
-before_install:
-- sudo apt-get install -y zip
-- go mod download
+services:
+- docker
 
 script:
-- make release-nodocker
+- make release
 
 deploy:
   provider: releases
@@ -21,5 +14,5 @@ deploy:
   file_glob: true
   file: release/*
   on:
-    repo: gswly/mavp2p
+    repo: aler9/mavp2p
     tags: true

@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/gswly/gomavlib"
-	"github.com/gswly/gomavlib/dialects/common"
+	"github.com/aler9/gomavlib"
+	"github.com/aler9/gomavlib/dialects/common"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
 	"log"

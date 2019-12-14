@@ -1,7 +1,7 @@
 
 .PHONY: $(shell ls)
 
-BASE_IMAGE = amd64/golang:1.12-stretch
+BASE_IMAGE = amd64/golang:1.13-alpine3.10
 
 help:
 	@echo "usage: make [action] [args...]"
@@ -15,25 +15,30 @@ help:
 	@echo ""
 
 mod-tidy:
-	docker run --rm -it -v $(PWD):/src $(BASE_IMAGE) \
-	sh -c "cd /src && go get -m ./... && go mod tidy"
+	docker run --rm -it -v $(PWD):/s $(BASE_IMAGE) \
+	sh -c "cd /s && go get && go mod tidy"
 
 format:
-	@docker run --rm -it -v $(PWD):/src $(BASE_IMAGE) \
-	sh -c "cd /src \
+	@docker run --rm -it -v $(PWD):/s $(BASE_IMAGE) \
+	sh -c "cd /s \
 	&& find . -type f -name '*.go' | xargs gofmt -l -w -s"
 
+define DOCKERFILE_RELEASE
+FROM $(BASE_IMAGE)
+RUN apk add --no-cache zip make git tar
+WORKDIR /s
+COPY go.mod go.sum ./
+RUN go mod download
+COPY .git ./.git
+COPY *.go Makefile ./
+RUN make release-nodocker
+endef
+export DOCKERFILE_RELEASE
+
 release:
-	echo "FROM $(BASE_IMAGE) \n\
-	RUN apt-get update && apt-get install -y zip \n\
-	WORKDIR /src \n\
-	COPY go.mod go.sum ./ \n\
-	RUN go mod download \n\
-	COPY .git ./.git \n\
-	COPY *.go Makefile ./ \n\
-	RUN make release-nodocker" | docker build . -f - -t mavp2p-release \
+	echo "$$DOCKERFILE_RELEASE" | docker build . -f - -t mavp2p-release \
 	&& docker run --rm -it -v $(PWD):/out \
-	mavp2p-release sh -c "rm -rf /out/release && cp -r /src/release /out/"
+	mavp2p-release sh -c "rm -rf /out/release && cp -r /s/release /out/"
 
 release-nodocker:
 	$(eval VERSION := $(shell git describe --tags))
@@ -60,7 +65,7 @@ travis-setup:
 	RUN apk add --no-cache build-base git \n\
 	RUN gem install travis" | docker build - -t mavp2p-travis-sr \
 	&& docker run --rm -it \
-	-v $(PWD):/src \
+	-v $(PWD):/s \
 	mavp2p-travis-sr \
-	sh -c "cd /src \
+	sh -c "cd /s \
 	&& travis setup releases"

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/gswly/gomavlib"
+	"github.com/aler9/gomavlib"
 	"log"
 	"sync"
 	"time"

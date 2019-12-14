@@ -1,14 +1,14 @@
 
 # mavp2p
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/gswly/mavp2p)](https://goreportcard.com/report/github.com/gswly/mavp2p)
-[![Build Status](https://travis-ci.org/gswly/mavp2p.svg?branch=master)](https://travis-ci.org/gswly/mavp2p)
+[![Go Report Card](https://goreportcard.com/badge/github.com/aler9/mavp2p)](https://goreportcard.com/report/github.com/aler9/mavp2p)
+[![Build Status](https://travis-ci.org/aler9/mavp2p.svg?branch=master)](https://travis-ci.org/aler9/mavp2p)
 
 _mavp2p_ is a flexible and efficient Mavlink proxy / bridge / router, implemented in the form of a command-line utility. It is used primarily for linking UAV flight controllers, connected through a serial port, with ground stations on a network, but can be used to build any kind of routing involving serial, TCP and UDP, allowing communication across different physical layers or transport layers.
 
 _mavp2p_ can replace _mavproxy_ in systems with limited resources (for instance companion computers), and _mavlink-router_ when more flexibility is needed.
 
-This project makes use of the [**gomavlib**](https://github.com/gswly/gomavlib) library, a full-featured Mavlink library.
+This project makes use of the [**gomavlib**](https://github.com/aler9/gomavlib) library, a full-featured Mavlink library.
 
 ## Features
 
@@ -39,7 +39,7 @@ Advantages with respect to _mavlink-router_:
 
 ## Installation
 
-Precompiled binaries are available in the [release](https://github.com/gswly/mavp2p/releases) page.
+Precompiled binaries are available in the [release](https://github.com/aler9/mavp2p/releases) page.
 
 ## Usage
 
