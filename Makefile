@@ -19,7 +19,7 @@ mod-tidy:
 	sh -c "cd /s && go get && go mod tidy"
 
 format:
-	@docker run --rm -it -v $(PWD):/s $(BASE_IMAGE) \
+	docker run --rm -it -v $(PWD):/s $(BASE_IMAGE) \
 	sh -c "cd /s \
 	&& find . -type f -name '*.go' | xargs gofmt -l -w -s"
 
@@ -35,9 +35,9 @@ endef
 export DOCKERFILE_RELEASE
 
 release:
-	echo "$$DOCKERFILE_RELEASE" | docker build . -f - -t mavp2p-release \
+	echo "$$DOCKERFILE_RELEASE" | docker build . -f - -t temp \
 	&& docker run --rm -it -v $(PWD):/out \
-	mavp2p-release sh -c "rm -rf /out/release && cp -r /s/release /out/"
+	temp sh -c "rm -rf /out/release && cp -r /s/release /out/"
 
 release-nodocker:
 	$(eval VERSION := $(shell git describe --tags))
@@ -60,11 +60,11 @@ release-nodocker:
 	tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_arm64.tar.gz --owner=0 --group=0 mavp2p
 
 travis-setup:
-	@echo "FROM ruby:alpine \n\
+	echo "FROM ruby:alpine \n\
 	RUN apk add --no-cache build-base git \n\
-	RUN gem install travis" | docker build - -t mavp2p-travis-sr \
+	RUN gem install travis" | docker build - -t temp \
 	&& docker run --rm -it \
 	-v $(PWD):/s \
-	mavp2p-travis-sr \
+	temp \
 	sh -c "cd /s \
-	&& travis setup releases"
+	&& travis setup releases --force"
