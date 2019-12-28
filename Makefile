@@ -29,8 +29,7 @@ RUN apk add --no-cache zip make git tar
 WORKDIR /s
 COPY go.mod go.sum ./
 RUN go mod download
-COPY .git ./.git
-COPY *.go Makefile ./
+COPY . ./
 RUN make release-nodocker
 endef
 export DOCKERFILE_RELEASE
