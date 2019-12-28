@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/aler9/gomavlib"
-	"github.com/aler9/gomavlib/dialects/common"
-	"gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
 	"time"
+
+	"github.com/aler9/gomavlib"
+	"github.com/aler9/gomavlib/dialects/common"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var Version string = "v0.0.0"
