@@ -74,7 +74,7 @@ Link together Mavlink endpoints.
 Flags:
       --help                     Show context-sensitive help (also try
                                  --help-long and --help-man).
-      --version                  print mavp2p version
+      --version                  print version
   -q, --quiet                    suppress info messages
       --print                    print routed frames
       --print-errors             print parse errors singularly, instead of

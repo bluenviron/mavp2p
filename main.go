@@ -77,7 +77,7 @@ func main() {
 	kingpin.CommandLine.Help = "mavp2p " + Version + "\n\n" +
 		"Link together Mavlink endpoints."
 
-	version := kingpin.Flag("version", "print mavp2p version").Bool()
+	version := kingpin.Flag("version", "print version").Bool()
 
 	quiet := kingpin.Flag("quiet", "suppress info messages").Short('q').Bool()
 	print := kingpin.Flag("print", "print routed frames").Bool()
@@ -106,7 +106,7 @@ func main() {
 
 	// print version
 	if *version == true {
-		fmt.Println("mavp2p " + Version)
+		fmt.Println(Version)
 		os.Exit(0)
 	}
 
