@@ -113,6 +113,9 @@ Args:
 
 ## Links
 
+Related projects
+* https://github.com/aler9/mavp2p
+
 Similar software
 * https://github.com/ArduPilot/MAVProxy
 * https://github.com/intel/mavlink-router
