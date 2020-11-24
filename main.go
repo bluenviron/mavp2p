@@ -15,7 +15,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-var Version = "v0.0.0"
+var version = "v0.0.0"
 
 var reArgs = regexp.MustCompile("^([a-z]+):(.+)$")
 
@@ -76,7 +76,7 @@ func initError(msg string, args ...interface{}) {
 }
 
 func main() {
-	kingpin.CommandLine.Help = "mavp2p " + Version + "\n\n" +
+	kingpin.CommandLine.Help = "mavp2p " + version + "\n\n" +
 		"Link together Mavlink endpoints."
 
 	version := kingpin.Flag("version", "print version").Bool()
@@ -108,7 +108,7 @@ func main() {
 
 	// print version
 	if *version == true {
-		fmt.Println(Version)
+		fmt.Println(version)
 		os.Exit(0)
 	}
 
@@ -183,7 +183,7 @@ func main() {
 		log.SetOutput(ioutil.Discard)
 	}
 
-	log.Printf("mavp2p %s", Version)
+	log.Printf("mavp2p %s", version)
 	log.Printf("router started with %d endpoints", len(econfs))
 
 	go eh.run()

@@ -41,7 +41,7 @@ release:
 
 release-nodocker:
 	$(eval VERSION := $(shell git describe --tags))
-	$(eval GOBUILD := go build -ldflags '-X "main.Version=$(VERSION)"')
+	$(eval GOBUILD := go build -ldflags '-X "main.version=$(VERSION)"')
 	rm -rf release && mkdir release
 
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o /tmp/mavp2p.exe
