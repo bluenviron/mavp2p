@@ -1,5 +1,5 @@
 
-BASE_IMAGE = amd64/golang:1.13-alpine3.10
+BASE_IMAGE = amd64/golang:1.15-alpine3.12
 
 .PHONY: $(shell ls)
 

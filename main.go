@@ -9,7 +9,9 @@ import (
 	"time"
 
 	"github.com/aler9/gomavlib"
-	"github.com/aler9/gomavlib/dialects/common"
+	"github.com/aler9/gomavlib/pkg/dialect"
+	"github.com/aler9/gomavlib/pkg/dialects/common"
+	"github.com/aler9/gomavlib/pkg/msg"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -138,17 +140,14 @@ func main() {
 
 	// decode/encode only a minimal set of messages.
 	// other messages change too frequently and cannot be integrated into a static tool.
-	msgs := []gomavlib.Message{}
+	msgs := []msg.Message{}
 	if *hbDisable == false || *streamReqDisable == false {
 		msgs = append(msgs, &common.MessageHeartbeat{})
 	}
 	if *streamReqDisable == false {
 		msgs = append(msgs, &common.MessageRequestDataStream{})
 	}
-	dialect, err := gomavlib.NewDialect(3, msgs)
-	if err != nil {
-		initError(err.Error())
-	}
+	dialect := &dialect.Dialect{3, msgs}
 
 	node, err := gomavlib.NewNode(gomavlib.NodeConf{
 		Endpoints: econfs,
