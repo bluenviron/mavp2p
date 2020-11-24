@@ -13,6 +13,7 @@ This project makes use of the [**gomavlib**](https://github.com/aler9/gomavlib) 
 ## Features
 
 Main features:
+
 * Links together an arbitrary number of different types of endpoints:
   * serial
   * UDP (client, server or broadcast mode)
@@ -25,6 +26,7 @@ Main features:
 * Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, armhf, amd64), does not depend on libc and therefore is compatible with lightweight distros (Alpine Linux)
 
 Advantages with respect to _mavproxy_:
+
 * Does not require python nor any interpreter
 * Much lower CPU and memory usage
 * Supports an arbitrary number of inputs and outputs
@@ -32,6 +34,7 @@ Advantages with respect to _mavproxy_:
 * UDP clients are removed when inactive
 
 Advantages with respect to _mavlink-router_:
+
 * Supports domain names
 * Supports multiple TCP servers
 * UDP clients are removed when inactive
@@ -44,26 +47,31 @@ Precompiled binaries are available in the [release](https://github.com/aler9/mav
 ## Usage
 
 Link a serial port with a UDP endpoint in client mode:
+
 ```
 ./mavp2p serial:/dev/ttyAMA0:57600 udpc:1.2.3.4:5600
 ```
 
 Link a serial port with a UDP endpoint in server mode:
+
 ```
 ./mavp2p serial:/dev/ttyAMA0:57600 udps:0.0.0.0:5600
 ```
 
 Link a UDP endpoint in broadcast mode with a TCP endpoint in client mode:
+
 ```
 ./mavp2p udpb:192.168.7.255:5601 tcpc:exampleendpoint.com:5600
 ```
 
 Create a server that links together all UDP endpoints that connect to it:
+
 ```
 ./mavp2p udps:0.0.0.0:5600
 ```
 
 Full command-line usage:
+
 ```
 usage: mavp2p [<flags>] [<endpoints>...]
 
@@ -114,11 +122,14 @@ Args:
 ## Links
 
 Related projects
+
 * https://github.com/aler9/mavp2p
 
 Similar software
+
 * https://github.com/ArduPilot/MAVProxy
 * https://github.com/intel/mavlink-router
 
 Mavlink references
+
 * https://mavlink.io/en/
