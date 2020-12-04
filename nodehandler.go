@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	NODE_INACTIVE_AFTER = 30 * time.Second
+	nodeInactiveAfter = 30 * time.Second
 )
 
 type remoteNode struct {
@@ -47,7 +47,7 @@ func (nh *nodeHandler) run() {
 			defer nh.remoteNodeMutex.Unlock()
 
 			for rnode, t := range nh.remoteNodes {
-				if now.Sub(t) >= NODE_INACTIVE_AFTER {
+				if now.Sub(t) >= nodeInactiveAfter {
 					log.Printf("node disappeared: %s", rnode)
 					delete(nh.remoteNodes, rnode)
 				}
