@@ -2,7 +2,7 @@
 # mavp2p
 
 [![Test](https://github.com/aler9/mavp2p/workflows/test/badge.svg)](https://github.com/aler9/mavp2p/actions)
-[![Go Report Card](https://goreportcard.com/badge/github.com/aler9/mavp2p)](https://goreportcard.com/report/github.com/aler9/mavp2p)
+[![Lint](https://github.com/aler9/mavp2p/workflows/lint/badge.svg)](https://github.com/aler9/mavp2p/actions)
 
 _mavp2p_ is a flexible and efficient Mavlink proxy / bridge / router, implemented in the form of a command-line utility. It is used primarily for linking UAV flight controllers, connected through a serial port, with ground stations on a network, but can be used to build any kind of routing involving serial, TCP and UDP, allowing communication across different physical layers or transport layers.
 

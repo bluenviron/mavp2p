@@ -14,12 +14,12 @@ const (
 
 type remoteNode struct {
 	Channel     *gomavlib.Channel
-	SystemId    byte
-	ComponentId byte
+	SystemID    byte
+	ComponentID byte
 }
 
 func (i remoteNode) String() string {
-	return fmt.Sprintf("chan=%s sid=%d cid=%d", i.Channel, i.SystemId, i.ComponentId)
+	return fmt.Sprintf("chan=%s sid=%d cid=%d", i.Channel, i.SystemID, i.ComponentID)
 }
 
 type nodeHandler struct {
@@ -59,8 +59,8 @@ func (nh *nodeHandler) run() {
 func (nh *nodeHandler) onEventFrame(evt *gomavlib.EventFrame) {
 	rnode := remoteNode{
 		Channel:     evt.Channel,
-		SystemId:    evt.SystemId(),
-		ComponentId: evt.ComponentId(),
+		SystemID:    evt.SystemID(),
+		ComponentID: evt.ComponentID(),
 	}
 
 	nh.remoteNodeMutex.Lock()

@@ -8,14 +8,14 @@ import (
 )
 
 type errorHandler struct {
-	printErrorsSingularly bool
-	errorCount            int
-	errorCountMutex       sync.Mutex
+	printSingleErrors bool
+	errorCount        int
+	errorCountMutex   sync.Mutex
 }
 
-func newErrorHandler(printErrorsSingularly bool) (*errorHandler, error) {
+func newErrorHandler(printSingleErrors bool) (*errorHandler, error) {
 	eh := &errorHandler{
-		printErrorsSingularly: printErrorsSingularly,
+		printSingleErrors: printSingleErrors,
 	}
 
 	return eh, nil
@@ -23,7 +23,7 @@ func newErrorHandler(printErrorsSingularly bool) (*errorHandler, error) {
 
 func (eh *errorHandler) run() {
 	// print errors in group
-	if eh.printErrorsSingularly == false {
+	if !eh.printSingleErrors {
 		for {
 			time.Sleep(5 * time.Second)
 
@@ -41,7 +41,7 @@ func (eh *errorHandler) run() {
 }
 
 func (eh *errorHandler) onEventError(evt *gomavlib.EventParseError) {
-	if eh.printErrorsSingularly == true {
+	if eh.printSingleErrors {
 		log.Printf("ERR: %s", evt.Error)
 		return
 	}

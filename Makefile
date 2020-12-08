@@ -10,6 +10,7 @@ help:
 	@echo ""
 	@echo "  mod-tidy      run go mod tidy"
 	@echo "  format        format source files"
+	@echo "  lint          run linter"
 	@echo "  release       build release assets for all platforms"
 	@echo "  travis-setup  set up travis for automatic releases"
 	@echo ""
@@ -22,6 +23,11 @@ format:
 	docker run --rm -it -v $(PWD):/s $(BASE_IMAGE) \
 	sh -c "cd /s \
 	&& find . -type f -name '*.go' | xargs gofmt -l -w -s"
+
+lint:
+	docker run --rm -v $(PWD):/app -w /app \
+	golangci/golangci-lint:v1.33.0 \
+	golangci-lint run -v
 
 define DOCKERFILE_RELEASE
 FROM $(BASE_IMAGE)
