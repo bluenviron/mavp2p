@@ -10,9 +10,7 @@ _mavp2p_ can replace _mavproxy_ in systems with limited resources (for instance 
 
 This project makes use of the [**gomavlib**](https://github.com/aler9/gomavlib) library, a full-featured Mavlink library.
 
-## Features
-
-Main features:
+Features:
 
 * Links together an arbitrary number of different types of endpoints:
   * serial
@@ -25,24 +23,17 @@ Main features:
 * Reconnects to TCP/UDP servers when disconnected, removes inactive TCP/UDP clients
 * Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, armhf, amd64), does not depend on libc and therefore is compatible with lightweight distros (Alpine Linux)
 
-Advantages with respect to _mavproxy_:
+## Table of contents
 
-* Does not require python nor any interpreter
-* Much lower CPU and memory usage
-* Supports an arbitrary number of inputs and outputs
-* Logs can be disabled, resulting in no disk I/O
-* UDP clients are removed when inactive
-
-Advantages with respect to _mavlink-router_:
-
-* Supports domain names
-* Supports multiple TCP servers
-* UDP clients are removed when inactive
-* Supports automatic stream requests to Ardupilot devices
+* [Installation](#installation)
+* [Usage](#usage)
+* [Comparison](#comparison)
+* [Full command-line usage](#full-command-line-usage)
+* [Links](#links)
 
 ## Installation
 
-Precompiled binaries are available in the [release](https://github.com/aler9/mavp2p/releases) page.
+Download and extract a precompiled binary from the [release page](https://github.com/aler9/mavp2p/releases).
 
 ## Usage
 
@@ -70,7 +61,24 @@ Create a server that links together all UDP endpoints that connect to it:
 ./mavp2p udps:0.0.0.0:5600
 ```
 
-Full command-line usage:
+## Comparison
+
+_mavp2p_ vs _mavproxy_:
+
+* Does not require python nor any interpreter
+* Much lower CPU and memory usage
+* Supports an arbitrary number of inputs and outputs
+* Logs can be disabled, resulting in no disk I/O
+* UDP clients are removed when inactive
+
+_mavp2p_ vs _mavlink-router_:
+
+* Supports domain names
+* Supports multiple TCP servers
+* UDP clients are removed when inactive
+* Supports automatic stream requests to Ardupilot devices
+
+## Full command-line usage
 
 ```
 usage: mavp2p [<flags>] [<endpoints>...]
