@@ -4,7 +4,7 @@
 [![Test](https://github.com/aler9/mavp2p/workflows/test/badge.svg)](https://github.com/aler9/mavp2p/actions)
 [![Lint](https://github.com/aler9/mavp2p/workflows/lint/badge.svg)](https://github.com/aler9/mavp2p/actions)
 
-_mavp2p_ is a flexible and efficient Mavlink proxy / bridge / router, implemented in the form of a command-line utility. It is used primarily for linking UAV flight controllers, connected through a serial port, with ground stations on a network, but can be used to build any kind of routing involving serial, TCP and UDP, allowing communication across different physical layers or transport layers.
+_mavp2p_ is a flexible and efficient Mavlink proxy / bridge / router, implemented in the form of a command-line utility. It is used primarily to link UAV flight controllers, connected through a serial port, with ground stations on a network, but can be used to build any kind of routing involving serial, TCP and UDP, allowing communication across different physical layers or transport layers.
 
 _mavp2p_ can replace _mavproxy_ in systems with limited resources (for instance companion computers), and _mavlink-router_ when more flexibility is needed.
 
@@ -12,16 +12,16 @@ This project makes use of the [**gomavlib**](https://github.com/aler9/gomavlib) 
 
 Features:
 
-* Links together an arbitrary number of different types of endpoints:
+* Link together an arbitrary number of different types of endpoints:
   * serial
   * UDP (client, server or broadcast mode)
   * TCP (client or server mode)
-* Supports Mavlink 2.0 and 1.0, supports any dialect
-* Emits heartbeats
-* Requests streams to Ardupilot devices and blocks stream requests from ground stations
-* Supports domain names in place of IPs
-* Reconnects to TCP/UDP servers when disconnected, removes inactive TCP/UDP clients
-* Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, armhf, amd64), does not depend on libc and therefore is compatible with lightweight distros (Alpine Linux)
+* Support Mavlink 2.0 and 1.0, support any dialect
+* Emit heartbeats
+* Request streams to Ardupilot devices and block stream requests from ground stations
+* Support domain names in place of IPs
+* Reconnect to TCP/UDP servers when disconnected, remove inactive TCP/UDP clients
+* Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, arm64, amd64), does not depend on libc and therefore is compatible with lightweight distros (Alpine Linux)
 
 ## Table of contents
 
@@ -63,7 +63,7 @@ Create a server that links together all UDP endpoints that connect to it:
 
 ## Comparison
 
-_mavp2p_ vs _mavproxy_:
+_mavp2p_ vs _mavproxy_
 
 * Does not require python nor any interpreter
 * Much lower CPU and memory usage
@@ -71,7 +71,7 @@ _mavp2p_ vs _mavproxy_:
 * Logs can be disabled, resulting in no disk I/O
 * UDP clients are removed when inactive
 
-_mavp2p_ vs _mavlink-router_:
+_mavp2p_ vs _mavlink-router_
 
 * Supports domain names
 * Supports multiple TCP servers
@@ -131,7 +131,7 @@ Args:
 
 Related projects
 
-* https://github.com/aler9/mavp2p
+* https://github.com/aler9/gomavlib
 
 Similar software
 
