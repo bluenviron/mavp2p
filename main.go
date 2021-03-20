@@ -122,8 +122,8 @@ func main() {
 		initError("at least one endpoint is required")
 	}
 
-	var econfs []gomavlib.EndpointConf
-	for _, e := range *endpoints {
+	econfs := make([]gomavlib.EndpointConf, len(*endpoints))
+	for i, e := range *endpoints {
 		matches := reArgs.FindStringSubmatch(e)
 		if matches == nil {
 			initError("invalid endpoint: %s", e)
@@ -135,7 +135,7 @@ func main() {
 			initError("invalid endpoint: %s", e)
 		}
 
-		econfs = append(econfs, etype.make(args))
+		econfs[i] = etype.make(args)
 	}
 
 	// decode/encode only a minimal set of messages.
