@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/aler9/gomavlib"
 	"log"
 	"sync"
 	"time"
+
+	"github.com/aler9/gomavlib"
 )
 
 type errorHandler struct {
