@@ -83,7 +83,8 @@ func main() {
 
 	argQuiet := kingpin.Flag("quiet", "suppress info messages").Short('q').Bool()
 	argPrint := kingpin.Flag("print", "print routed frames").Bool()
-	argPrintSingleErrors := kingpin.Flag("print-errors", "print parse errors singularly, instead of printing only their quantity every 5 seconds").Bool()
+	argPrintSingleErrors := kingpin.Flag("print-errors",
+		"print parse errors singularly, instead of printing only their quantity every 5 seconds").Bool()
 
 	argHbDisable := kingpin.Flag("hb-disable", "disable heartbeats").Bool()
 	argHbVersion := kingpin.Flag("hb-version", "set mavlink version of heartbeats").Default("1").Enum("1", "2")
