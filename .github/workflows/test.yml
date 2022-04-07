@@ -13,4 +13,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - run: go build -o /dev/null .
+    - run: make test

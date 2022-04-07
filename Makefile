@@ -1,6 +1,6 @@
 
 BASE_IMAGE = golang:1.17-alpine3.14
-LINT_IMAGE = golangci/golangci-lint:v1.44.2
+LINT_IMAGE = golangci/golangci-lint:v1.45.2
 
 .PHONY: $(shell ls)
 
@@ -11,6 +11,7 @@ help:
 	@echo ""
 	@echo "  mod-tidy      run go mod tidy"
 	@echo "  format        format source files"
+	@echo "  test          run tests"
 	@echo "  lint          run linter"
 	@echo "  release       build release assets for all platforms"
 	@echo "  travis-setup  set up travis for automatic releases"
@@ -22,7 +23,7 @@ mod-tidy:
 
 define DOCKERFILE_FORMAT
 FROM $(BASE_IMAGE)
-RUN go install mvdan.cc/gofumpt@v0.2.0
+RUN go install mvdan.cc/gofumpt@v0.3.1
 endef
 export DOCKERFILE_FORMAT
 
@@ -30,6 +31,11 @@ format:
 	echo "$$DOCKERFILE_FORMAT" | docker build -q . -f - -t temp
 	docker run --rm -it -v $(PWD):/s -w /s temp \
 	sh -c "gofumpt -l -w ."
+
+test:
+	docker run --rm -v $(PWD):/app -w /app \
+	$(BASE_IMAGE) \
+	go build -o /dev/null .
 
 lint:
 	docker run --rm -v $(PWD):/app -w /app \
