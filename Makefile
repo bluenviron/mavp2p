@@ -13,7 +13,6 @@ help:
 	@echo "  test          run tests"
 	@echo "  lint          run linter"
 	@echo "  release       build release assets for all platforms"
-	@echo "  travis-setup  set up travis for automatic releases"
 	@echo ""
 
 mod-tidy:
@@ -76,17 +75,3 @@ release-nodocker:
 
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 $(GOBUILD) -o /tmp/mavp2p
 	tar -C /tmp -czf $(PWD)/release/mavp2p_$(VERSION)_linux_arm64.tar.gz --owner=0 --group=0 mavp2p
-
-define DOCKERFILE_TRAVIS
-FROM ruby:alpine
-RUN apk add --no-cache build-base git
-RUN gem install travis
-endef
-export DOCKERFILE_TRAVIS
-
-travis-setup:
-	echo "$$DOCKERFILE_TRAVIS" | docker build - -t temp
-	docker run --rm -it \
-	-v $(PWD):/s -w /s \
-	temp \
-	sh -c "travis setup releases --force"
