@@ -185,7 +185,14 @@ func main() {
 	}
 
 	log.Printf("mavp2p %s", version)
-	log.Printf("router started with %d endpoints", len(econfs))
+	log.Printf("router started with %d %s",
+		len(econfs),
+		func() string {
+			if len(econfs) == 1 {
+				return "endpoint"
+			}
+			return "endpoints"
+		}())
 
 	go eh.run()
 	go nh.run()
