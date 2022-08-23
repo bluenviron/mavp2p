@@ -10,6 +10,7 @@ help:
 	@echo ""
 	@echo "  mod-tidy      run go mod tidy"
 	@echo "  format        format source files"
+	@echo "  run           run app"
 	@echo "  test          run tests"
 	@echo "  lint          run linter"
 	@echo "  release       build release assets for all platforms"
