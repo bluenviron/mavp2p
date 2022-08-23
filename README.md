@@ -12,7 +12,7 @@ This project makes use of the [**gomavlib**](https://github.com/aler9/gomavlib) 
 
 Features:
 
-* Link together an arbitrary number of different types of endpoints:
+* Link together an arbitrary number of different kinds of endpoints:
   * serial
   * UDP (client, server or broadcast mode)
   * TCP (client or server mode)
@@ -111,7 +111,7 @@ Flags:
 
 Args:
   [<endpoints>]  Space-separated list of endpoints. At least one
-                 endpoint is required. Possible endpoints types are:
+                 endpoint is required. Possible endpoints kinds are:
 
                  udps:listen_ip:port (udp, server mode)
 
