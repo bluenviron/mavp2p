@@ -11,7 +11,7 @@ import (
 	"github.com/aler9/gomavlib"
 	"github.com/aler9/gomavlib/pkg/dialect"
 	"github.com/aler9/gomavlib/pkg/dialects/common"
-	"github.com/aler9/gomavlib/pkg/msg"
+	"github.com/aler9/gomavlib/pkg/message"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -141,7 +141,7 @@ func main() {
 
 	// decode/encode only a minimal set of messages.
 	// other messages change too frequently and cannot be integrated into a static tool.
-	msgs := []msg.Message{}
+	msgs := []message.Message{}
 	if !*argHbDisable || !*argStreamReqDisable {
 		msgs = append(msgs, &common.MessageHeartbeat{})
 	}
