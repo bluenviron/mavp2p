@@ -3,7 +3,7 @@ module mavp2p
 go 1.17
 
 require (
-	github.com/aler9/gomavlib v0.0.0-20220822135552-5538e36d7b91
+	github.com/aler9/gomavlib v0.0.0-20220823095305-e968bdc57347
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
 
