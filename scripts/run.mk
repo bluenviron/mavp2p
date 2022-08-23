@@ -14,5 +14,6 @@ run:
 	docker run --rm -it \
 	--network=host \
 	--privileged \
+	-e COLUMNS=$$(tput cols) \
 	temp \
 	sh -c "/out $(OPTIONS)"
