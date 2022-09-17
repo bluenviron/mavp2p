@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/aler9/gomavlib"
@@ -17,55 +18,69 @@ import (
 
 var version = "v0.0.0"
 
-var reArgs = regexp.MustCompile("^([a-z]+):(.+)$")
+var (
+	reArgs   = regexp.MustCompile("^([a-z]+):(.+)$")
+	reSerial = regexp.MustCompile("^(.+?):([0-9]+)$")
+)
 
 type endpointType struct {
 	args string
 	desc string
-	make func(args string) gomavlib.EndpointConf
+	make func(args string) (gomavlib.EndpointConf, error)
 }
 
 var endpointTypes = map[string]endpointType{
 	"serial": {
 		"port:baudrate",
 		"serial",
-		func(args string) gomavlib.EndpointConf {
-			return gomavlib.EndpointSerial{args} //nolint:govet
+		func(args string) (gomavlib.EndpointConf, error) {
+			matches := reSerial.FindStringSubmatch(args)
+			if matches == nil {
+				return nil, fmt.Errorf("invalid address")
+			}
+
+			dev := matches[1]
+			baud, _ := strconv.Atoi(matches[2])
+
+			return gomavlib.EndpointSerial{
+				Device: dev,
+				Baud:   baud,
+			}, nil
 		},
 	},
 	"udps": {
 		"listen_ip:port",
 		"udp, server mode",
-		func(args string) gomavlib.EndpointConf {
-			return gomavlib.EndpointUDPServer{args} //nolint:govet
+		func(args string) (gomavlib.EndpointConf, error) {
+			return gomavlib.EndpointUDPServer{Address: args}, nil
 		},
 	},
 	"udpc": {
 		"dest_ip:port",
 		"udp, client mode",
-		func(args string) gomavlib.EndpointConf {
-			return gomavlib.EndpointUDPClient{args} //nolint:govet
+		func(args string) (gomavlib.EndpointConf, error) {
+			return gomavlib.EndpointUDPClient{Address: args}, nil
 		},
 	},
 	"udpb": {
 		"broadcast_ip:port",
 		"udp, broadcast mode",
-		func(args string) gomavlib.EndpointConf {
-			return gomavlib.EndpointUDPBroadcast{BroadcastAddress: args} //nolint:govet
+		func(args string) (gomavlib.EndpointConf, error) {
+			return gomavlib.EndpointUDPBroadcast{BroadcastAddress: args}, nil
 		},
 	},
 	"tcps": {
 		"listen_ip:port",
 		"tcp, server mode",
-		func(args string) gomavlib.EndpointConf {
-			return gomavlib.EndpointTCPServer{args} //nolint:govet
+		func(args string) (gomavlib.EndpointConf, error) {
+			return gomavlib.EndpointTCPServer{Address: args}, nil
 		},
 	},
 	"tcpc": {
 		"dest_ip:port",
 		"tcp, client mode",
-		func(args string) gomavlib.EndpointConf {
-			return gomavlib.EndpointTCPClient{args} //nolint:govet
+		func(args string) (gomavlib.EndpointConf, error) {
+			return gomavlib.EndpointTCPClient{Address: args}, nil
 		},
 	},
 }
@@ -136,7 +151,11 @@ func main() {
 			initError("invalid endpoint: %s", e)
 		}
 
-		econfs[i] = etype.make(args)
+		conf, err := etype.make(args)
+		if err != nil {
+			initError(err.Error())
+		}
+		econfs[i] = conf
 	}
 
 	// decode/encode only a minimal set of messages.
