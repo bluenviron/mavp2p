@@ -37,6 +37,12 @@ Features:
 
 Download and extract a precompiled binary from the [release page](https://github.com/aler9/mavp2p/releases).
 
+If you want to use Docker, there's a image available at `aler9/mavp2p`:
+
+```
+docker run --rm -it --network=host aler9/mavp2p
+```
+
 ## Usage
 
 Link a serial port with a UDP endpoint in client mode:
