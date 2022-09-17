@@ -85,12 +85,7 @@ var endpointTypes = map[string]endpointType{
 	},
 }
 
-func initError(msg string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, "ERROR: "+msg+"\n", args...)
-	os.Exit(1)
-}
-
-func main() {
+func run() error {
 	kingpin.CommandLine.Help = "mavp2p " + version + "\n\n" +
 		"Link together Mavlink endpoints."
 
@@ -125,7 +120,7 @@ func main() {
 	// print version
 	if *argVersion {
 		fmt.Println(version)
-		os.Exit(0)
+		return nil
 	}
 
 	// print usage if no args are provided
@@ -135,25 +130,25 @@ func main() {
 	}
 
 	if len(*endpoints) < 1 {
-		initError("at least one endpoint is required")
+		return fmt.Errorf("at least one endpoint is required")
 	}
 
 	econfs := make([]gomavlib.EndpointConf, len(*endpoints))
 	for i, e := range *endpoints {
 		matches := reArgs.FindStringSubmatch(e)
 		if matches == nil {
-			initError("invalid endpoint: %s", e)
+			return fmt.Errorf("invalid endpoint: %s", e)
 		}
 		key, args := matches[1], matches[2]
 
 		etype, ok := endpointTypes[key]
 		if !ok {
-			initError("invalid endpoint: %s", e)
+			return fmt.Errorf("invalid endpoint: %s", e)
 		}
 
 		conf, err := etype.make(args)
 		if err != nil {
-			initError(err.Error())
+			return err
 		}
 		econfs[i] = conf
 	}
@@ -185,18 +180,18 @@ func main() {
 		StreamRequestFrequency: *argStreamReqFrequency,
 	})
 	if err != nil {
-		initError(err.Error())
+		return err
 	}
 	defer node.Close()
 
 	eh, err := newErrorHandler(*argPrintSingleErrors)
 	if err != nil {
-		initError(err.Error())
+		return err
 	}
 
 	nh, err := newNodeHandler()
 	if err != nil {
-		initError(err.Error())
+		return err
 	}
 
 	if *argQuiet {
@@ -249,5 +244,13 @@ func main() {
 		case *gomavlib.EventParseError:
 			eh.onEventError(evt)
 		}
+	}
+}
+
+func main() {
+	err := run()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERR: %s\n", err)
+		os.Exit(1)
 	}
 }
