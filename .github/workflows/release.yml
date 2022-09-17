@@ -1,0 +1,42 @@
+name: release
+
+on:
+  push:
+    tags:
+    - 'v*'
+
+jobs:
+  github:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - run: make release
+
+    - uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs').promises;
+          const { repo: { owner, repo } } = context;
+
+          const currentRelease = context.ref.split('/')[2];
+
+          const res = await github.rest.repos.createRelease({
+            owner,
+            repo,
+            tag_name: currentRelease,
+            name: currentRelease,
+          });
+          const release_id = res.data.id;
+
+          for (const name of await fs.readdir('./release/')) {
+            await github.rest.repos.uploadReleaseAsset({
+              owner,
+              repo,
+              release_id,
+              name,
+              data: await fs.readFile(`./release/${name}`),
+            });
+          }
