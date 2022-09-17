@@ -40,3 +40,14 @@ jobs:
               data: await fs.readFile(`./release/${name}`),
             });
           }
+
+  dockerhub:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - run: make dockerhub
+      env:
+        DOCKER_USER: ${{ secrets.DOCKER_USER }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
