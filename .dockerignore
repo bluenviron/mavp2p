@@ -1,3 +1,2 @@
 # do not add .git, since it is needed to extract the tag
-
-/release
+/binaries

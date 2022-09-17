@@ -13,7 +13,7 @@ help:
 	@echo "  run           run app"
 	@echo "  test          run tests"
 	@echo "  lint          run linter"
-	@echo "  release       build release assets for all platforms"
+	@echo "  binaries      build binaries for all platforms"
 	@echo ""
 
 include scripts/*.mk
