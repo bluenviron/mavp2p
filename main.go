@@ -245,6 +245,8 @@ func run() error {
 			eh.onEventError(evt)
 		}
 	}
+
+	return nil
 }
 
 func main() {
