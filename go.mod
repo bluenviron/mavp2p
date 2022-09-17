@@ -1,6 +1,6 @@
 module mavp2p
 
-go 1.17
+go 1.18
 
 require (
 	github.com/aler9/gomavlib v0.0.0-20220917163427-45c64e630722
