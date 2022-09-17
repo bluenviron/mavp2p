@@ -1,8 +1,9 @@
+// main executable.
 package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"regexp"
@@ -195,7 +196,7 @@ func run() error {
 	}
 
 	if *argQuiet {
-		log.SetOutput(ioutil.Discard)
+		log.SetOutput(io.Discard)
 	}
 
 	log.Printf("mavp2p %s", version)
