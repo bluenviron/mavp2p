@@ -87,8 +87,7 @@ var endpointTypes = map[string]endpointType{
 }
 
 func run() error {
-	kingpin.CommandLine.Help = "mavp2p " + version + "\n\n" +
-		"Link together Mavlink endpoints."
+	kingpin.CommandLine.Help = "mavp2p " + version
 
 	argVersion := kingpin.Flag("version", "print version").Bool()
 
