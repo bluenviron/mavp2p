@@ -40,7 +40,7 @@ Download and extract a precompiled binary from the [release page](https://github
 If you want to use Docker, there's a image available at `aler9/mavp2p`:
 
 ```
-docker run --rm -it --network=host aler9/mavp2p
+docker run --rm -it --network=host -e COLUMNS=$COLUMNS aler9/mavp2p
 ```
 
 ## Usage
