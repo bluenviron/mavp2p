@@ -10,11 +10,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/alecthomas/kong"
 	"github.com/aler9/gomavlib"
 	"github.com/aler9/gomavlib/pkg/dialect"
 	"github.com/aler9/gomavlib/pkg/dialects/common"
 	"github.com/aler9/gomavlib/pkg/message"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var version = "v0.0.0"
@@ -86,55 +86,70 @@ var endpointTypes = map[string]endpointType{
 	},
 }
 
+var cli struct {
+	Version            bool `help:"print version."`
+	Quiet              bool `short:"q" help:"suppress info messages."`
+	Print              bool `help:"print routed frames."`
+	PrintErrors        bool
+	HbDisable          bool   `help:"disable heartbeats."`
+	HbVersion          string `enum:"1,2" help:"set mavlink version of heartbeats." default:"1"`
+	HbSystemid         int    `default:"125"`
+	HbPeriod           int    `help:"set period of heartbeats." default:"5"`
+	StreamreqDisable   bool
+	StreamreqFrequency int      `help:"set the stream frequency to request." default:"4"`
+	Endpoints          []string `arg:"" optional:""`
+}
+
 func run() error {
-	kingpin.CommandLine.Help = "mavp2p " + version
+	ctx := kong.Parse(&cli,
+		kong.Description("mavp2p "+version),
+		kong.UsageOnError(),
+		kong.ValueFormatter(func(value *kong.Value) string {
+			switch value.Name {
+			case "print-errors":
+				return "print parse errors singularly, instead of printing only their quantity every 5 seconds."
 
-	argVersion := kingpin.Flag("version", "print version").Bool()
+			case "hb-systemid":
+				return "set system id of heartbeats. it is recommended to set a different system id for each router in the network."
 
-	argQuiet := kingpin.Flag("quiet", "suppress info messages").Short('q').Bool()
-	argPrint := kingpin.Flag("print", "print routed frames").Bool()
-	argPrintSingleErrors := kingpin.Flag("print-errors",
-		"print parse errors singularly, instead of printing only their quantity every 5 seconds").Bool()
+			case "streamreq-disable":
+				return "do not request streams to Ardupilot devices," +
+					" that need an explicit request in order to emit telemetry streams." +
+					" this task is usually delegated to the router," +
+					" in order to avoid conflicts when multiple ground stations are active."
 
-	argHbDisable := kingpin.Flag("hb-disable", "disable heartbeats").Bool()
-	argHbVersion := kingpin.Flag("hb-version", "set mavlink version of heartbeats").Default("1").Enum("1", "2")
-	argHbSystemID := kingpin.Flag("hb-systemid", "set system id of heartbeats"+
-		"it is recommended to set a different system id for each router in the network.").Default("125").Int()
-	argHbPeriod := kingpin.Flag("hb-period", "set period of heartbeats").Default("5").Int()
+			case "endpoints":
+				desc := "Space-separated list of endpoints. At least one endpoint is required. " +
+					"Possible endpoints types are:\n\n"
+				for k, etype := range endpointTypes {
+					desc += fmt.Sprintf("%s:%s (%s)\n\n", k, etype.args, etype.desc)
+				}
+				return desc
 
-	argStreamReqDisable := kingpin.Flag("streamreq-disable", "do not request streams to Ardupilot devices, "+
-		"that need an explicit request in order to emit telemetry streams. "+
-		"this task is usually delegated to the router, in order to avoid conflicts when "+
-		"multiple ground stations are active.").Bool()
-	argStreamReqFrequency := kingpin.Flag("streamreq-frequency", "set the stream frequency to request").Default("4").Int()
-
-	desc := "Space-separated list of endpoints. At least one endpoint is required. " +
-		"Possible endpoints types are:\n\n"
-	for k, etype := range endpointTypes {
-		desc += fmt.Sprintf("%s:%s (%s)\n\n", k, etype.args, etype.desc)
-	}
-	endpoints := kingpin.Arg("endpoints", desc).Strings()
-
-	kingpin.Parse()
+			default:
+				return kong.DefaultHelpValueFormatter(value)
+			}
+		}),
+	)
 
 	// print version
-	if *argVersion {
+	if cli.Version {
 		fmt.Println(version)
 		return nil
 	}
 
 	// print usage if no args are provided
 	if len(os.Args) <= 1 {
-		kingpin.Usage()
+		ctx.PrintUsage(false)
 		os.Exit(1)
 	}
 
-	if len(*endpoints) < 1 {
+	if len(cli.Endpoints) < 1 {
 		return fmt.Errorf("at least one endpoint is required")
 	}
 
-	econfs := make([]gomavlib.EndpointConf, len(*endpoints))
-	for i, e := range *endpoints {
+	econfs := make([]gomavlib.EndpointConf, len(cli.Endpoints))
+	for i, e := range cli.Endpoints {
 		matches := reArgs.FindStringSubmatch(e)
 		if matches == nil {
 			return fmt.Errorf("invalid endpoint: %s", e)
@@ -156,10 +171,10 @@ func run() error {
 	// decode/encode only a minimal set of messages.
 	// other messages change too frequently and cannot be integrated into a static tool.
 	msgs := []message.Message{}
-	if !*argHbDisable || !*argStreamReqDisable {
+	if !cli.HbDisable || !cli.StreamreqDisable {
 		msgs = append(msgs, &common.MessageHeartbeat{})
 	}
-	if !*argStreamReqDisable {
+	if !cli.StreamreqDisable {
 		msgs = append(msgs, &common.MessageRequestDataStream{})
 	}
 	dialect := &dialect.Dialect{3, msgs} //nolint:govet
@@ -168,23 +183,23 @@ func run() error {
 		Endpoints: econfs,
 		Dialect:   dialect,
 		OutVersion: func() gomavlib.Version {
-			if *argHbVersion == "2" {
+			if cli.HbVersion == "2" {
 				return gomavlib.V2
 			}
 			return gomavlib.V1
 		}(),
-		OutSystemID:            byte(*argHbSystemID),
-		HeartbeatDisable:       *argHbDisable,
-		HeartbeatPeriod:        (time.Duration(*argHbPeriod) * time.Second),
-		StreamRequestEnable:    !*argStreamReqDisable,
-		StreamRequestFrequency: *argStreamReqFrequency,
+		OutSystemID:            byte(cli.HbSystemid),
+		HeartbeatDisable:       cli.HbDisable,
+		HeartbeatPeriod:        (time.Duration(cli.HbPeriod) * time.Second),
+		StreamRequestEnable:    !cli.StreamreqDisable,
+		StreamRequestFrequency: cli.StreamreqFrequency,
 	})
 	if err != nil {
 		return err
 	}
 	defer node.Close()
 
-	eh, err := newErrorHandler(*argPrintSingleErrors)
+	eh, err := newErrorHandler(cli.PrintErrors)
 	if err != nil {
 		return err
 	}
@@ -194,7 +209,7 @@ func run() error {
 		return err
 	}
 
-	if *argQuiet {
+	if cli.Quiet {
 		log.SetOutput(io.Discard)
 	}
 
@@ -225,14 +240,14 @@ func run() error {
 				evt.SystemID, evt.ComponentID)
 
 		case *gomavlib.EventFrame:
-			if *argPrint {
+			if cli.Print {
 				fmt.Printf("%#v, %#v\n", evt.Frame, evt.Message())
 			}
 
 			nh.onEventFrame(evt)
 
 			// if automatic stream requests are enabled, block manual stream requests
-			if !*argStreamReqDisable {
+			if !cli.StreamreqDisable {
 				if _, ok := evt.Message().(*common.MessageRequestDataStream); ok {
 					continue
 				}
