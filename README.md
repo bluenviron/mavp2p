@@ -8,8 +8,6 @@
 
 _mavp2p_ is a flexible and efficient Mavlink proxy / bridge / router, implemented in the form of a command-line utility. It is used primarily to link UAV flight controllers, connected through a serial port, with ground stations on a network, but can be used to build any kind of routing involving serial, TCP and UDP, allowing communication across different physical layers or transport layers.
 
-_mavp2p_ can replace _mavproxy_ in systems with limited resources (for instance companion computers), and _mavlink-router_ when more flexibility is needed.
-
 This project makes use of the [**gomavlib**](https://github.com/aler9/gomavlib) library, a full-featured Mavlink library.
 
 Features:
@@ -25,11 +23,17 @@ Features:
 * Reconnect to TCP/UDP servers when disconnected, remove inactive TCP/UDP clients
 * Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, arm64, amd64), does not depend on libc and therefore is compatible with lightweight distros (Alpine Linux)
 
+## Important announcement
+
+my main open source projects are being transferred to the [bluenviron organization](https://github.com/bluenviron), in order to allow the community to maintain and evolve the code regardless of my personal availability.
+
+In the next months, the repository name will be changed accordingly.
+
 ## Table of contents
 
 * [Installation](#installation)
 * [Usage](#usage)
-* [Comparison](#comparison)
+* [Comparison with similar software](#comparison-with-similar-software)
 * [Full command-line usage](#full-command-line-usage)
 * [Links](#links)
 
@@ -69,7 +73,7 @@ Create a server that links together all UDP endpoints that connect to it:
 ./mavp2p udps:0.0.0.0:5600
 ```
 
-## Comparison
+## Comparison with similar software
 
 _mavp2p_ vs _mavproxy_
 
