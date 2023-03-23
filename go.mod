@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/alecthomas/kong v0.7.1
-	github.com/aler9/gomavlib v0.0.0-20220917163427-45c64e630722
+	github.com/aler9/gomavlib v1.3.0
 )
 
 require (
