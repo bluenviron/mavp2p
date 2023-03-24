@@ -1,14 +1,14 @@
 
 # mavp2p
 
-[![Test](https://github.com/aler9/mavp2p/workflows/test/badge.svg)](https://github.com/aler9/mavp2p/actions?query=workflow:test)
-[![Lint](https://github.com/aler9/mavp2p/workflows/lint/badge.svg)](https://github.com/aler9/mavp2p/actions?query=workflow:lint)
-[![Release](https://img.shields.io/github/v/release/aler9/mavp2p)](https://github.com/aler9/mavp2p/releases)
+[![Test](https://github.com/bluenviron/mavp2p/workflows/test/badge.svg)](https://github.com/bluenviron/mavp2p/actions?query=workflow:test)
+[![Lint](https://github.com/bluenviron/mavp2p/workflows/lint/badge.svg)](https://github.com/bluenviron/mavp2p/actions?query=workflow:lint)
+[![Release](https://img.shields.io/github/v/release/bluenviron/mavp2p)](https://github.com/bluenviron/mavp2p/releases)
 [![Docker Hub](https://img.shields.io/badge/docker-aler9/mavp2p-blue)](https://hub.docker.com/r/aler9/mavp2p)
 
 _mavp2p_ is a flexible and efficient Mavlink proxy / bridge / router, implemented in the form of a command-line utility. It is used primarily to link UAV flight controllers, connected through a serial port, with ground stations on a network, but can be used to build any kind of routing involving serial, TCP and UDP, allowing communication across different physical layers or transport layers.
 
-This project makes use of the [**gomavlib**](https://github.com/aler9/gomavlib) library, a full-featured Mavlink library.
+This project makes use of the [**gomavlib**](https://github.com/bluenviron/gomavlib) library, a full-featured Mavlink library.
 
 Features:
 
@@ -39,7 +39,7 @@ In the next months, the repository name will be changed accordingly.
 
 ## Installation
 
-Download and extract a precompiled binary from the [release page](https://github.com/aler9/mavp2p/releases).
+Download and extract a precompiled binary from the [release page](https://github.com/bluenviron/mavp2p/releases).
 
 If you want to use Docker, there's a image available at `aler9/mavp2p`:
 
@@ -143,7 +143,7 @@ Args:
 
 Related projects
 
-* https://github.com/aler9/gomavlib
+* https://github.com/bluenviron/gomavlib
 
 Similar software
 
