@@ -23,12 +23,6 @@ Features:
 * Reconnect to TCP/UDP servers when disconnected, remove inactive TCP/UDP clients
 * Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, arm64, amd64), does not depend on libc and therefore is compatible with lightweight distros (Alpine Linux)
 
-## Important announcement
-
-my main open source projects are being transferred to the [bluenviron organization](https://github.com/bluenviron), in order to allow the community to maintain and evolve the code regardless of my personal availability.
-
-In the next months, the repository name will be changed accordingly.
-
 ## Table of contents
 
 * [Installation](#installation)
