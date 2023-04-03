@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/alecthomas/kong v0.7.1
-	github.com/bluenviron/gomavlib/v2 v2.0.0
+	github.com/bluenviron/gomavlib/v2 v2.0.1
 )
 
 require (
