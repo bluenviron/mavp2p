@@ -29,6 +29,7 @@ Features:
 * [Usage](#usage)
 * [Comparison with similar software](#comparison-with-similar-software)
 * [Full command-line usage](#full-command-line-usage)
+* [Standards](#standards)
 * [Links](#links)
 
 ## Installation
@@ -133,17 +134,17 @@ Args:
 
 ```
 
+## Standards
+
+* [Mavlink standards](https://github.com/bluenviron/gomavlib#standards)
+
 ## Links
 
 Related projects
 
-* https://github.com/bluenviron/gomavlib
+* [gomavlib](https://github.com/bluenviron/gomavlib)
 
 Similar software
 
-* https://github.com/ArduPilot/MAVProxy
-* https://github.com/intel/mavlink-router
-
-Mavlink references
-
-* https://mavlink.io/en/
+* [MavProxy](https://github.com/ArduPilot/MAVProxy)
+* [mavlink-router](https://github.com/intel/mavlink-router)
