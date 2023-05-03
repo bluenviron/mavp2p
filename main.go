@@ -14,9 +14,7 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/bluenviron/gomavlib/v2"
-	"github.com/bluenviron/gomavlib/v2/pkg/dialect"
 	"github.com/bluenviron/gomavlib/v2/pkg/dialects/common"
-	"github.com/bluenviron/gomavlib/v2/pkg/message"
 )
 
 var version = "v0.0.0"
@@ -92,6 +90,7 @@ var cli struct {
 	Version            bool `help:"print version."`
 	Quiet              bool `short:"q" help:"suppress info messages."`
 	Print              bool `help:"print routed frames."`
+	PrintRoutes        bool `help:"print routes applied for messages with targets."`
 	PrintErrors        bool
 	HbDisable          bool   `help:"disable heartbeats."`
 	HbVersion          string `enum:"1,2" help:"set mavlink version of heartbeats." default:"1"`
@@ -185,17 +184,6 @@ func newProgram(args []string) (*program, error) {
 		econfs[i] = conf
 	}
 
-	// decode/encode only a minimal set of messages.
-	// other messages change too frequently and cannot be integrated into a static tool.
-	msgs := []message.Message{}
-	if !cli.HbDisable || !cli.StreamreqDisable {
-		msgs = append(msgs, &common.MessageHeartbeat{})
-	}
-	if !cli.StreamreqDisable {
-		msgs = append(msgs, &common.MessageRequestDataStream{})
-	}
-	dialect := &dialect.Dialect{3, msgs} //nolint:govet
-
 	ctx, ctxCancel := context.WithCancel(context.Background())
 
 	p := &program{
@@ -205,7 +193,7 @@ func newProgram(args []string) (*program, error) {
 
 	p.node, err = gomavlib.NewNode(gomavlib.NodeConf{
 		Endpoints: econfs,
-		Dialect:   dialect,
+		Dialect:   common.Dialect,
 		OutVersion: func() gomavlib.Version {
 			if cli.HbVersion == "2" {
 				return gomavlib.V2
@@ -305,6 +293,45 @@ func (p *program) run() {
 				// if automatic stream requests are enabled, block manual stream requests
 				if !cli.StreamreqDisable {
 					if _, ok := evt.Message().(*common.MessageRequestDataStream); ok {
+						continue
+					}
+				}
+
+				routeMsg := false // Flag to mark a msg for routing
+				targetSystem := uint8(0)
+				targetComponent := uint8(0)
+				switch msg := evt.Message().(type) {
+				case *common.MessageCommandLong:
+					routeMsg = true
+					targetSystem = msg.TargetSystem
+					targetComponent = msg.TargetComponent
+				case *common.MessageCommandAck:
+					routeMsg = true
+					targetSystem = msg.TargetSystem
+					targetComponent = msg.TargetComponent
+				case *common.MessageCommandInt:
+					routeMsg = true
+					targetSystem = msg.TargetSystem
+					targetComponent = msg.TargetComponent
+				}
+
+				if routeMsg {
+					if targetSystem > 0 { // Route only if it's non-broadcast command
+						for remoteNode := range p.nodeHandler.remoteNodes { // Iterates through connected nodes
+							if remoteNode.SystemID == targetSystem {
+								if remoteNode.ComponentID == targetComponent ||
+									targetComponent < 1 { // Route if compid matches or is a broadcast
+									if remoteNode.Channel != evt.Channel { // Prevents Loops
+										if cli.PrintRoutes {
+											fmt.Println("Routing msg ", evt.Message().GetID(), " from ", evt.Channel, "--->", remoteNode.Channel)
+										}
+										p.node.WriteFrameTo(remoteNode.Channel, evt.Frame)
+									} else {
+										fmt.Println("Warning: channel ", remoteNode.Channel, " attempted to send to itself, discarding ")
+									}
+								}
+							}
+						}
 						continue
 					}
 				}
