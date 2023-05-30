@@ -33,3 +33,6 @@ binaries-nodocker:
 
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 $(GOBUILD) -o /tmp/mavp2p
 	tar -C /tmp -czf $(PWD)/binaries/mavp2p_$(VERSION)_linux_arm64.tar.gz --owner=0 --group=0 mavp2p
+
+	CGO_ENABLED=0 GOOS=linux GOARCH=mipsle  GOMIPS=softfloat $(GOBUILD) -o /tmp/mavp2p
+	tar -C /tmp -czf $(PWD)/binaries/mavp2p_$(VERSION)_linux_mipsle.tar.gz --owner=0 --group=0 mavp2p
