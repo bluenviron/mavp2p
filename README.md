@@ -34,13 +34,51 @@ Features:
 
 ## Installation
 
+There are several installation methods available: static binary, Docker image and OpenWRT package.
+
+### Static binary
+
 Download and extract a precompiled binary from the [release page](https://github.com/bluenviron/mavp2p/releases).
 
-If you want to use Docker, there's a image available at `aler9/mavp2p`:
+### Docker image
+
+There's a image available at `aler9/mavp2p`:
 
 ```
 docker run --rm -it --network=host -e COLUMNS=$COLUMNS aler9/mavp2p
 ```
+
+### OpenWRT package
+
+1. In a x86 Linux system, download the OpenWRT SDK corresponding to the wanted OpenWRT version and target from the [OpenWRT website](https://downloads.openwrt.org/releases/) and extract it.
+
+2. Open a terminal in the SDK folder and setup the SDK:
+
+   ```
+   ./scripts/feeds update -a
+   ./scripts/feeds install -a
+   make defconfig
+   ```
+
+3. Download the server Makefile and set the server version inside the file:
+
+   ```
+   mkdir package/mavp2p
+   wget -O package/mavp2p/Makefile https://raw.githubusercontent.com/bluenviron/mavp2p/main/openwrt.mk
+   sed -i "s/v0.0.0/$(git ls-remote --tags --sort=v:refname https://github.com/bluenviron/mavp2p | tail -n1 | sed 's/.*\///; s/\^{}//')/" package/mavp2p/Makefile
+   ```
+
+4. Compile the server:
+
+   ```
+   make package/mavp2p/compile -j$(nproc)
+   ```
+
+5. Transfer the .ipk file from `bin/packages/*/base` to the OpenWRT system and install it with:
+
+   ```
+   opkg install [ipk-file-name].ipk
+   ```
 
 ## Usage
 
