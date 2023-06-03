@@ -1,4 +1,4 @@
-module mavp2p
+module github.com/bluenviron/mavp2p
 
 go 1.20
 
