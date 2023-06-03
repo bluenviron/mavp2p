@@ -26,17 +26,29 @@ dockerhub:
 	rm -rf $$HOME/.docker/manifests/*
 	docker buildx create --name=builder --use
 
-	echo "$$DOCKERFILE_DOCKERHUB" | docker buildx build . -f - --build-arg VERSION=$(VERSION) \
-	--push -t aler9/mavp2p:$(VERSION)-amd64 --build-arg OPTS="GOOS=linux GOARCH=amd64" --platform=linux/amd64
+	echo "$$DOCKERFILE_DOCKERHUB" | docker buildx build . -f - \
+	--provenance=false \
+	--platform=linux/amd64 \
+	--build-arg VERSION=$(VERSION) \
+	--push -t aler9/mavp2p:$(VERSION)-amd64 --build-arg OPTS="GOOS=linux GOARCH=amd64"
 
-	echo "$$DOCKERFILE_DOCKERHUB" | docker buildx build . -f - --build-arg VERSION=$(VERSION) \
-	--push -t aler9/mavp2p:$(VERSION)-armv6 --build-arg OPTS="GOOS=linux GOARCH=arm GOARM=6" --platform=linux/arm/v6
+	echo "$$DOCKERFILE_DOCKERHUB" | docker buildx build . -f - \
+	--provenance=false \
+	--platform=linux/arm/v6 \
+	--build-arg VERSION=$(VERSION) \
+	--push -t aler9/mavp2p:$(VERSION)-armv6 --build-arg OPTS="GOOS=linux GOARCH=arm GOARM=6"
 
-	echo "$$DOCKERFILE_DOCKERHUB" | docker buildx build . -f - --build-arg VERSION=$(VERSION) \
-	--push -t aler9/mavp2p:$(VERSION)-armv7 --build-arg OPTS="GOOS=linux GOARCH=arm GOARM=7" --platform=linux/arm/v7
+	echo "$$DOCKERFILE_DOCKERHUB" | docker buildx build . -f - \
+	--provenance=false \
+	--platform=linux/arm/v7 \
+	--build-arg VERSION=$(VERSION) \
+	--push -t aler9/mavp2p:$(VERSION)-armv7 --build-arg OPTS="GOOS=linux GOARCH=arm GOARM=7"
 
-	echo "$$DOCKERFILE_DOCKERHUB" | docker buildx build . -f - --build-arg VERSION=$(VERSION) \
-	--push -t aler9/mavp2p:$(VERSION)-arm64v8 --build-arg OPTS="GOOS=linux GOARCH=arm64" --platform=linux/arm64/v8
+	echo "$$DOCKERFILE_DOCKERHUB" | docker buildx build . -f - \
+	--provenance=false \
+	--platform=linux/arm64/v8 \
+	--build-arg VERSION=$(VERSION) \
+	--push -t aler9/mavp2p:$(VERSION)-arm64v8 --build-arg OPTS="GOOS=linux GOARCH=arm64"
 
 	docker manifest create aler9/mavp2p:$(VERSION) \
 	$(foreach ARCH,amd64 armv6 armv7 arm64v8,aler9/mavp2p:$(VERSION)-$(ARCH))
