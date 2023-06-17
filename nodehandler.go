@@ -39,11 +39,11 @@ func newNodeHandler() (*nodeHandler, error) {
 func (nh *nodeHandler) run() {
 	// delete remote nodes after a period of inactivity
 	for {
-		time.Sleep(10 * time.Second)
-
-		now := time.Now()
-
 		func() {
+			<-time.After(10 * time.Second)
+
+			now := time.Now()
+
 			nh.remoteNodeMutex.Lock()
 			defer nh.remoteNodeMutex.Unlock()
 

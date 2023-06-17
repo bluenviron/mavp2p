@@ -25,9 +25,10 @@ func newErrorHandler(printSingleErrors bool) (*errorHandler, error) {
 func (eh *errorHandler) run() {
 	// print errors in group
 	if !eh.printSingleErrors {
-		for {
-			time.Sleep(5 * time.Second)
+		t := time.NewTicker(5 * time.Second)
+		defer t.Stop()
 
+		for range t.C {
 			func() {
 				eh.errorCountMutex.Lock()
 				defer eh.errorCountMutex.Unlock()
