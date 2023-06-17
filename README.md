@@ -34,11 +34,11 @@ Features:
 
 ## Installation
 
-There are several installation methods available: static binary, Docker image and OpenWRT package.
+There are several installation methods available: standalone binary, Docker image and OpenWRT package.
 
-### Static binary
+### Standalone binary
 
-Download and extract a precompiled binary from the [release page](https://github.com/bluenviron/mavp2p/releases).
+Download and extract a standalone binary from the [release page](https://github.com/bluenviron/mavp2p/releases).
 
 ### Docker image
 
