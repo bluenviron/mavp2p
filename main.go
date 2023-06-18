@@ -297,7 +297,7 @@ func (p *program) run() {
 
 			case *gomavlib.EventFrame:
 				if cli.Print {
-					fmt.Printf("%#v, %#v\n", evt.Frame, evt.Message())
+					log.Printf("%#v, %#v\n", evt.Frame, evt.Message())
 				}
 
 				p.nodeHandler.onEventFrame(evt)
