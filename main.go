@@ -323,11 +323,11 @@ func (p *program) run() {
 									targetComponent < 1 { // Route if compid matches or is a broadcast
 									if remoteNode.Channel != evt.Channel { // Prevents Loops
 										if cli.PrintRoutes {
-											fmt.Println("Routing msg ", evt.Message().GetID(), " from ", evt.Channel, "--->", remoteNode.Channel)
+											log.Println("Routing msg ", evt.Message().GetID(), " from ", evt.Channel, "--->", remoteNode.Channel)
 										}
 										p.node.WriteFrameTo(remoteNode.Channel, evt.Frame)
 									} else {
-										fmt.Println("Warning: channel ", remoteNode.Channel, " attempted to send to itself, discarding ")
+										log.Println("Warning: channel ", remoteNode.Channel, " attempted to send to itself, discarding ")
 									}
 								}
 							}
