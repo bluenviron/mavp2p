@@ -10,7 +10,7 @@ import (
 )
 
 func TestProgram(t *testing.T) {
-	p, err := newProgram([]string{"tcps:0.0.0.0:6666"})
+	p, err := newProgram([]string{"--print", "tcps:0.0.0.0:6666"})
 	require.NoError(t, err)
 	defer p.close()
 
