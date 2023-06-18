@@ -1,4 +1,15 @@
+define DOCKERFILE_TEST
+FROM $(BASE_IMAGE)
+RUN apk add --no-cache make gcc musl-dev
+WORKDIR /s
+COPY go.mod go.sum ./
+RUN go mod download
+endef
+export DOCKERFILE_TEST
+
 test:
-	docker run --rm -v $(PWD):/app -w /app \
-	$(BASE_IMAGE) \
-	go build -o /dev/null .
+	echo "$$DOCKERFILE_TEST" | docker build -q . -f - -t temp
+	docker run --rm \
+	-v $(PWD):/s -w /s \
+	temp \
+	go test -v -race -coverprofile=coverage.txt .
