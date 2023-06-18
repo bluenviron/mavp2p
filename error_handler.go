@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"sync"
 	"time"
@@ -9,25 +10,44 @@ import (
 )
 
 type errorHandler struct {
+	ctx               context.Context
+	wg                *sync.WaitGroup
 	printSingleErrors bool
-	errorCount        int
-	errorCountMutex   sync.Mutex
+
+	errorCount      int
+	errorCountMutex sync.Mutex
 }
 
-func newErrorHandler(printSingleErrors bool) (*errorHandler, error) {
+func newErrorHandler(
+	ctx context.Context,
+	wg *sync.WaitGroup,
+	printSingleErrors bool,
+) (*errorHandler, error) {
 	eh := &errorHandler{
+		ctx:               ctx,
+		wg:                wg,
 		printSingleErrors: printSingleErrors,
 	}
+
+	wg.Add(1)
+	go eh.run()
 
 	return eh, nil
 }
 
 func (eh *errorHandler) run() {
-	// print errors in group
-	if !eh.printSingleErrors {
-		for {
-			time.Sleep(5 * time.Second)
+	defer eh.wg.Done()
 
+	if eh.printSingleErrors {
+		return
+	}
+
+	t := time.NewTicker(5 * time.Second)
+	defer t.Stop()
+
+	for {
+		select {
+		case <-t.C:
 			func() {
 				eh.errorCountMutex.Lock()
 				defer eh.errorCountMutex.Unlock()
@@ -37,6 +57,9 @@ func (eh *errorHandler) run() {
 					eh.errorCount = 0
 				}
 			}()
+
+		case <-eh.ctx.Done():
+			return
 		}
 	}
 }
