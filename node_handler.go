@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"sync"
@@ -24,36 +25,53 @@ func (i remoteNode) String() string {
 }
 
 type nodeHandler struct {
+	ctx context.Context
+	wg  *sync.WaitGroup
+
 	remoteNodeMutex sync.Mutex
 	remoteNodes     map[remoteNode]time.Time
 }
 
-func newNodeHandler() (*nodeHandler, error) {
+func newNodeHandler(
+	ctx context.Context,
+	wg *sync.WaitGroup,
+) (*nodeHandler, error) {
 	nh := &nodeHandler{
+		ctx:         ctx,
+		wg:          wg,
 		remoteNodes: make(map[remoteNode]time.Time),
 	}
+
+	wg.Add(1)
+	go nh.run()
 
 	return nh, nil
 }
 
 func (nh *nodeHandler) run() {
+	defer nh.wg.Done()
+
 	// delete remote nodes after a period of inactivity
 	for {
-		func() {
-			<-time.After(10 * time.Second)
+		select {
+		case <-time.After(10 * time.Second):
+			func() {
+				now := time.Now()
 
-			now := time.Now()
+				nh.remoteNodeMutex.Lock()
+				defer nh.remoteNodeMutex.Unlock()
 
-			nh.remoteNodeMutex.Lock()
-			defer nh.remoteNodeMutex.Unlock()
-
-			for rnode, t := range nh.remoteNodes {
-				if now.Sub(t) >= nodeInactiveAfter {
-					log.Printf("node disappeared: %s", rnode)
-					delete(nh.remoteNodes, rnode)
+				for rnode, t := range nh.remoteNodes {
+					if now.Sub(t) >= nodeInactiveAfter {
+						log.Printf("node disappeared: %s", rnode)
+						delete(nh.remoteNodes, rnode)
+					}
 				}
-			}
-		}()
+			}()
+
+		case <-nh.ctx.Done():
+			return
+		}
 	}
 }
 

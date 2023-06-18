@@ -2,12 +2,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"regexp"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/alecthomas/kong"
@@ -100,8 +102,17 @@ var cli struct {
 	Endpoints          []string `arg:"" optional:""`
 }
 
-func run() error {
-	ctx := kong.Parse(&cli,
+type program struct {
+	ctx          context.Context
+	ctxCancel    func()
+	wg           sync.WaitGroup
+	node         *gomavlib.Node
+	errorHandler *errorHandler
+	nodeHandler  *nodeHandler
+}
+
+func newProgram(args []string) (*program, error) {
+	parser, err := kong.New(&cli,
 		kong.Description("mavp2p "+version),
 		kong.UsageOnError(),
 		kong.ValueFormatter(func(value *kong.Value) string {
@@ -129,41 +140,47 @@ func run() error {
 			default:
 				return kong.DefaultHelpValueFormatter(value)
 			}
-		}),
-	)
+		}))
+	if err != nil {
+		return nil, err
+	}
 
-	// print version
+	kongCtx, err := parser.Parse(args)
+	if err != nil {
+		return nil, err
+	}
+
 	if cli.Version {
 		fmt.Println(version)
-		return nil
+		os.Exit(0)
 	}
 
 	// print usage if no args are provided
 	if len(os.Args) <= 1 {
-		ctx.PrintUsage(false)
+		kongCtx.PrintUsage(false)
 		os.Exit(1)
 	}
 
 	if len(cli.Endpoints) < 1 {
-		return fmt.Errorf("at least one endpoint is required")
+		return nil, fmt.Errorf("at least one endpoint is required")
 	}
 
 	econfs := make([]gomavlib.EndpointConf, len(cli.Endpoints))
 	for i, e := range cli.Endpoints {
 		matches := reArgs.FindStringSubmatch(e)
 		if matches == nil {
-			return fmt.Errorf("invalid endpoint: %s", e)
+			return nil, fmt.Errorf("invalid endpoint: %s", e)
 		}
 		key, args := matches[1], matches[2]
 
 		etype, ok := endpointTypes[key]
 		if !ok {
-			return fmt.Errorf("invalid endpoint: %s", e)
+			return nil, fmt.Errorf("invalid endpoint: %s", e)
 		}
 
 		conf, err := etype.make(args)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		econfs[i] = conf
 	}
@@ -179,7 +196,14 @@ func run() error {
 	}
 	dialect := &dialect.Dialect{3, msgs} //nolint:govet
 
-	node, err := gomavlib.NewNode(gomavlib.NodeConf{
+	ctx, ctxCancel := context.WithCancel(context.Background())
+
+	p := &program{
+		ctx:       ctx,
+		ctxCancel: ctxCancel,
+	}
+
+	p.node, err = gomavlib.NewNode(gomavlib.NodeConf{
 		Endpoints: econfs,
 		Dialect:   dialect,
 		OutVersion: func() gomavlib.Version {
@@ -195,18 +219,31 @@ func run() error {
 		StreamRequestFrequency: cli.StreamreqFrequency,
 	})
 	if err != nil {
-		return err
-	}
-	defer node.Close()
-
-	eh, err := newErrorHandler(cli.PrintErrors)
-	if err != nil {
-		return err
+		ctxCancel()
+		return nil, err
 	}
 
-	nh, err := newNodeHandler()
+	p.errorHandler, err = newErrorHandler(
+		ctx,
+		&p.wg,
+		cli.PrintErrors,
+	)
 	if err != nil {
-		return err
+		ctxCancel()
+		p.wg.Wait()
+		p.node.Close()
+		return nil, err
+	}
+
+	p.nodeHandler, err = newNodeHandler(
+		ctx,
+		&p.wg,
+	)
+	if err != nil {
+		ctxCancel()
+		p.wg.Wait()
+		p.node.Close()
+		return nil, err
 	}
 
 	if cli.Quiet {
@@ -223,51 +260,75 @@ func run() error {
 			return "endpoints"
 		}())
 
-	go eh.run()
-	go nh.run()
+	p.wg.Add(1)
+	go p.run()
 
-	for e := range node.Events() {
-		switch evt := e.(type) {
-		case *gomavlib.EventChannelOpen:
-			log.Printf("channel opened: %s", evt.Channel)
+	return p, nil
+}
 
-		case *gomavlib.EventChannelClose:
-			log.Printf("channel closed: %s", evt.Channel)
-			nh.onEventChannelClose(evt)
+func (p *program) close() {
+	p.ctxCancel()
+	p.wg.Wait()
+}
 
-		case *gomavlib.EventStreamRequested:
-			log.Printf("stream requested to chan=%s sid=%d cid=%d", evt.Channel,
-				evt.SystemID, evt.ComponentID)
+func (p *program) wait() {
+	p.wg.Wait()
+}
 
-		case *gomavlib.EventFrame:
-			if cli.Print {
-				fmt.Printf("%#v, %#v\n", evt.Frame, evt.Message())
-			}
+func (p *program) run() {
+	defer p.wg.Done()
 
-			nh.onEventFrame(evt)
+	defer p.node.Close()
 
-			// if automatic stream requests are enabled, block manual stream requests
-			if !cli.StreamreqDisable {
-				if _, ok := evt.Message().(*common.MessageRequestDataStream); ok {
-					continue
+	for {
+		select {
+		case e := <-p.node.Events():
+			switch evt := e.(type) {
+			case *gomavlib.EventChannelOpen:
+				log.Printf("channel opened: %s", evt.Channel)
+
+			case *gomavlib.EventChannelClose:
+				log.Printf("channel closed: %s", evt.Channel)
+				p.nodeHandler.onEventChannelClose(evt)
+
+			case *gomavlib.EventStreamRequested:
+				log.Printf("stream requested to chan=%s sid=%d cid=%d", evt.Channel,
+					evt.SystemID, evt.ComponentID)
+
+			case *gomavlib.EventFrame:
+				if cli.Print {
+					fmt.Printf("%#v, %#v\n", evt.Frame, evt.Message())
 				}
+
+				p.nodeHandler.onEventFrame(evt)
+
+				// if automatic stream requests are enabled, block manual stream requests
+				if !cli.StreamreqDisable {
+					if _, ok := evt.Message().(*common.MessageRequestDataStream); ok {
+						continue
+					}
+				}
+
+				// route message to every other channel
+				p.node.WriteFrameExcept(evt.Channel, evt.Frame)
+
+			case *gomavlib.EventParseError:
+				p.errorHandler.onEventError(evt)
 			}
 
-			// route message to every other channel
-			node.WriteFrameExcept(evt.Channel, evt.Frame)
-
-		case *gomavlib.EventParseError:
-			eh.onEventError(evt)
+		case <-p.ctx.Done():
+			return
 		}
 	}
-
-	return nil
 }
 
 func main() {
-	err := run()
+	p, err := newProgram(os.Args[1:])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERR: %s\n", err)
 		os.Exit(1)
 	}
+	defer p.close()
+
+	p.wait()
 }
