@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"reflect"
 	"regexp"
 	"strconv"
 	"sync"
@@ -29,18 +30,19 @@ var (
 // decode/encode only a minimal set of messages.
 // other messages change too frequently and cannot be integrated into a static tool.
 func generateDialect(hbDisable bool, streamreqDisable bool) *dialect.Dialect {
-	msgs := []message.Message{
-		&common.MessageCommandLong{},
-		&common.MessageCommandAck{},
-		&common.MessageCommandInt{},
+	msgs := []message.Message{}
+
+	// add all messages with the TargetSystem and TargetComponent fields
+	var zero reflect.Value
+	for _, msg := range common.Dialect.Messages {
+		rv := reflect.ValueOf(msg).Elem()
+		if rv.FieldByName("TargetSystem") != zero && rv.FieldByName("TargetComponent") != zero {
+			msgs = append(msgs, msg)
+		}
 	}
 
 	if !hbDisable || !streamreqDisable {
 		msgs = append(msgs, &common.MessageHeartbeat{})
-	}
-
-	if !streamreqDisable {
-		msgs = append(msgs, &common.MessageRequestDataStream{})
 	}
 
 	return &dialect.Dialect{Version: 3, Messages: msgs}
