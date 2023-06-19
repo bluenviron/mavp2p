@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGeneric(t *testing.T) {
+func TestBroadcast(t *testing.T) {
 	p, err := newProgram([]string{"--print", "tcps:0.0.0.0:6666"})
 	require.NoError(t, err)
 	defer p.close()
@@ -20,10 +20,11 @@ func TestGeneric(t *testing.T) {
 				Address: "127.0.0.1:6666",
 			},
 		},
-		OutVersion:     gomavlib.V2,
-		OutSystemID:    4,
-		OutComponentID: 5,
-		Dialect:        common.Dialect,
+		OutVersion:       gomavlib.V2,
+		OutSystemID:      4,
+		OutComponentID:   5,
+		Dialect:          common.Dialect,
+		HeartbeatDisable: true,
 	})
 	require.NoError(t, err)
 	defer pub.Close()
@@ -69,7 +70,7 @@ func TestGeneric(t *testing.T) {
 	require.Equal(t, msg, eventFr.Frame.GetMessage())
 }
 
-func TestDirect(t *testing.T) {
+func TestTarget(t *testing.T) {
 	p, err := newProgram([]string{"tcps:0.0.0.0:6666"})
 	require.NoError(t, err)
 	defer p.close()
@@ -80,10 +81,11 @@ func TestDirect(t *testing.T) {
 				Address: "127.0.0.1:6666",
 			},
 		},
-		OutVersion:     gomavlib.V2,
-		OutSystemID:    4,
-		OutComponentID: 5,
-		Dialect:        common.Dialect,
+		OutVersion:       gomavlib.V2,
+		OutSystemID:      4,
+		OutComponentID:   5,
+		Dialect:          common.Dialect,
+		HeartbeatDisable: true,
 	})
 	require.NoError(t, err)
 	defer pub.Close()
@@ -94,10 +96,11 @@ func TestDirect(t *testing.T) {
 				Address: "127.0.0.1:6666",
 			},
 		},
-		OutVersion:     gomavlib.V2,
-		OutSystemID:    6,
-		OutComponentID: 7,
-		Dialect:        common.Dialect,
+		OutVersion:       gomavlib.V2,
+		OutSystemID:      6,
+		OutComponentID:   7,
+		Dialect:          common.Dialect,
+		HeartbeatDisable: true,
 	})
 	require.NoError(t, err)
 	defer sub1.Close()
@@ -108,10 +111,11 @@ func TestDirect(t *testing.T) {
 				Address: "127.0.0.1:6666",
 			},
 		},
-		OutVersion:     gomavlib.V2,
-		OutSystemID:    8,
-		OutComponentID: 9,
-		Dialect:        common.Dialect,
+		OutVersion:       gomavlib.V2,
+		OutSystemID:      8,
+		OutComponentID:   9,
+		Dialect:          common.Dialect,
+		HeartbeatDisable: true,
 	})
 	require.NoError(t, err)
 	defer sub2.Close()
@@ -163,4 +167,71 @@ func TestDirect(t *testing.T) {
 		t.Errorf("should not happen")
 	case <-time.After(100 * time.Millisecond):
 	}
+}
+
+func TestTargetNotFound(t *testing.T) {
+	p, err := newProgram([]string{"tcps:0.0.0.0:6666"})
+	require.NoError(t, err)
+	defer p.close()
+
+	pub, err := gomavlib.NewNode(gomavlib.NodeConf{
+		Endpoints: []gomavlib.EndpointConf{
+			gomavlib.EndpointTCPClient{
+				Address: "127.0.0.1:6666",
+			},
+		},
+		OutVersion:       gomavlib.V2,
+		OutSystemID:      4,
+		OutComponentID:   5,
+		Dialect:          common.Dialect,
+		HeartbeatDisable: true,
+	})
+	require.NoError(t, err)
+	defer pub.Close()
+
+	sub, err := gomavlib.NewNode(gomavlib.NodeConf{
+		Endpoints: []gomavlib.EndpointConf{
+			gomavlib.EndpointTCPClient{
+				Address: "127.0.0.1:6666",
+			},
+		},
+		OutVersion:       gomavlib.V2,
+		OutSystemID:      8,
+		OutComponentID:   9,
+		Dialect:          common.Dialect,
+		HeartbeatDisable: true,
+	})
+	require.NoError(t, err)
+	defer sub.Close()
+
+	<-pub.Events()
+	<-sub.Events()
+
+	sub.WriteMessageAll(&common.MessageHeartbeat{
+		Type:           common.MAV_TYPE_GCS,
+		SystemStatus:   4,
+		MavlinkVersion: 3,
+	})
+
+	evt := <-pub.Events()
+	eventFr, ok := evt.(*gomavlib.EventFrame)
+	require.Equal(t, true, ok)
+	require.Equal(t, &common.MessageHeartbeat{
+		Type:           6,
+		SystemStatus:   4,
+		MavlinkVersion: 3,
+	}, eventFr.Frame.GetMessage())
+
+	msg := &common.MessageCommandLong{
+		TargetSystem:    6,
+		TargetComponent: 7,
+		Command:         common.MAV_CMD_NAV_FOLLOW,
+	}
+
+	pub.WriteMessageAll(msg)
+
+	evt = <-sub.Events()
+	eventFr, ok = evt.(*gomavlib.EventFrame)
+	require.Equal(t, true, ok)
+	require.Equal(t, msg, eventFr.Frame.GetMessage())
 }

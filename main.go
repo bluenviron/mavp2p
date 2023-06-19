@@ -26,6 +26,26 @@ var (
 	reSerial = regexp.MustCompile("^(.+?):([0-9]+)$")
 )
 
+// decode/encode only a minimal set of messages.
+// other messages change too frequently and cannot be integrated into a static tool.
+func generateDialect(hbDisable bool, streamreqDisable bool) *dialect.Dialect {
+	msgs := []message.Message{
+		&common.MessageCommandLong{},
+		&common.MessageCommandAck{},
+		&common.MessageCommandInt{},
+	}
+
+	if !hbDisable || !streamreqDisable {
+		msgs = append(msgs, &common.MessageHeartbeat{})
+	}
+
+	if !streamreqDisable {
+		msgs = append(msgs, &common.MessageRequestDataStream{})
+	}
+
+	return &dialect.Dialect{Version: 3, Messages: msgs}
+}
+
 type endpointType struct {
 	args string
 	desc string
@@ -86,6 +106,35 @@ var endpointTypes = map[string]endpointType{
 			return gomavlib.EndpointTCPClient{Address: args}, nil
 		},
 	},
+}
+
+func generateEndpointConfs(endpoints []string) ([]gomavlib.EndpointConf, error) {
+	if len(endpoints) < 1 {
+		return nil, fmt.Errorf("at least one endpoint is required")
+	}
+
+	econfs := make([]gomavlib.EndpointConf, len(endpoints))
+
+	for i, e := range endpoints {
+		matches := reArgs.FindStringSubmatch(e)
+		if matches == nil {
+			return nil, fmt.Errorf("invalid endpoint: %s", e)
+		}
+		key, args := matches[1], matches[2]
+
+		etype, ok := endpointTypes[key]
+		if !ok {
+			return nil, fmt.Errorf("invalid endpoint: %s", e)
+		}
+
+		conf, err := etype.make(args)
+		if err != nil {
+			return nil, err
+		}
+		econfs[i] = conf
+	}
+
+	return econfs, nil
 }
 
 var cli struct {
@@ -161,44 +210,10 @@ func newProgram(args []string) (*program, error) {
 		os.Exit(1)
 	}
 
-	if len(cli.Endpoints) < 1 {
-		return nil, fmt.Errorf("at least one endpoint is required")
+	endpointConfs, err := generateEndpointConfs(cli.Endpoints)
+	if err != nil {
+		return nil, err
 	}
-
-	econfs := make([]gomavlib.EndpointConf, len(cli.Endpoints))
-	for i, e := range cli.Endpoints {
-		matches := reArgs.FindStringSubmatch(e)
-		if matches == nil {
-			return nil, fmt.Errorf("invalid endpoint: %s", e)
-		}
-		key, args := matches[1], matches[2]
-
-		etype, ok := endpointTypes[key]
-		if !ok {
-			return nil, fmt.Errorf("invalid endpoint: %s", e)
-		}
-
-		conf, err := etype.make(args)
-		if err != nil {
-			return nil, err
-		}
-		econfs[i] = conf
-	}
-
-	// decode/encode only a minimal set of messages.
-	// other messages change too frequently and cannot be integrated into a static tool.
-	msgs := []message.Message{
-		&common.MessageCommandLong{},
-		&common.MessageCommandAck{},
-		&common.MessageCommandInt{},
-	}
-	if !cli.HbDisable || !cli.StreamreqDisable {
-		msgs = append(msgs, &common.MessageHeartbeat{})
-	}
-	if !cli.StreamreqDisable {
-		msgs = append(msgs, &common.MessageRequestDataStream{})
-	}
-	dialect := &dialect.Dialect{Version: 3, Messages: msgs}
 
 	ctx, ctxCancel := context.WithCancel(context.Background())
 
@@ -208,8 +223,8 @@ func newProgram(args []string) (*program, error) {
 	}
 
 	p.node, err = gomavlib.NewNode(gomavlib.NodeConf{
-		Endpoints: econfs,
-		Dialect:   dialect,
+		Endpoints: endpointConfs,
+		Dialect:   generateDialect(cli.HbDisable, cli.StreamreqDisable),
 		OutVersion: func() gomavlib.Version {
 			if cli.HbVersion == "2" {
 				return gomavlib.V2
@@ -258,9 +273,9 @@ func newProgram(args []string) (*program, error) {
 
 	log.Printf("mavp2p %s", version)
 	log.Printf("router started with %d %s",
-		len(econfs),
+		len(endpointConfs),
 		func() string {
-			if len(econfs) == 1 {
+			if len(endpointConfs) == 1 {
 				return "endpoint"
 			}
 			return "endpoints"
