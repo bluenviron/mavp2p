@@ -26,6 +26,26 @@ var (
 	reSerial = regexp.MustCompile("^(.+?):([0-9]+)$")
 )
 
+// decode/encode only a minimal set of messages.
+// other messages change too frequently and cannot be integrated into a static tool.
+func generateDialect(hbDisable bool, streamreqDisable bool) *dialect.Dialect {
+	msgs := []message.Message{
+		&common.MessageCommandLong{},
+		&common.MessageCommandAck{},
+		&common.MessageCommandInt{},
+	}
+
+	if !hbDisable || !streamreqDisable {
+		msgs = append(msgs, &common.MessageHeartbeat{})
+	}
+
+	if !streamreqDisable {
+		msgs = append(msgs, &common.MessageRequestDataStream{})
+	}
+
+	return &dialect.Dialect{Version: 3, Messages: msgs}
+}
+
 type endpointType struct {
 	args string
 	desc string
@@ -88,6 +108,35 @@ var endpointTypes = map[string]endpointType{
 	},
 }
 
+func generateEndpointConfs(endpoints []string) ([]gomavlib.EndpointConf, error) {
+	if len(endpoints) < 1 {
+		return nil, fmt.Errorf("at least one endpoint is required")
+	}
+
+	econfs := make([]gomavlib.EndpointConf, len(endpoints))
+
+	for i, e := range endpoints {
+		matches := reArgs.FindStringSubmatch(e)
+		if matches == nil {
+			return nil, fmt.Errorf("invalid endpoint: %s", e)
+		}
+		key, args := matches[1], matches[2]
+
+		etype, ok := endpointTypes[key]
+		if !ok {
+			return nil, fmt.Errorf("invalid endpoint: %s", e)
+		}
+
+		conf, err := etype.make(args)
+		if err != nil {
+			return nil, err
+		}
+		econfs[i] = conf
+	}
+
+	return econfs, nil
+}
+
 var cli struct {
 	Version            bool `help:"print version."`
 	Quiet              bool `short:"q" help:"suppress info messages."`
@@ -103,12 +152,12 @@ var cli struct {
 }
 
 type program struct {
-	ctx          context.Context
-	ctxCancel    func()
-	wg           sync.WaitGroup
-	node         *gomavlib.Node
-	errorHandler *errorHandler
-	nodeHandler  *nodeHandler
+	ctx            context.Context
+	ctxCancel      func()
+	wg             sync.WaitGroup
+	node           *gomavlib.Node
+	errorHandler   *errorHandler
+	messageHandler *messageHandler
 }
 
 func newProgram(args []string) (*program, error) {
@@ -161,44 +210,10 @@ func newProgram(args []string) (*program, error) {
 		os.Exit(1)
 	}
 
-	if len(cli.Endpoints) < 1 {
-		return nil, fmt.Errorf("at least one endpoint is required")
+	endpointConfs, err := generateEndpointConfs(cli.Endpoints)
+	if err != nil {
+		return nil, err
 	}
-
-	econfs := make([]gomavlib.EndpointConf, len(cli.Endpoints))
-	for i, e := range cli.Endpoints {
-		matches := reArgs.FindStringSubmatch(e)
-		if matches == nil {
-			return nil, fmt.Errorf("invalid endpoint: %s", e)
-		}
-		key, args := matches[1], matches[2]
-
-		etype, ok := endpointTypes[key]
-		if !ok {
-			return nil, fmt.Errorf("invalid endpoint: %s", e)
-		}
-
-		conf, err := etype.make(args)
-		if err != nil {
-			return nil, err
-		}
-		econfs[i] = conf
-	}
-
-	// decode/encode only a minimal set of messages.
-	// other messages change too frequently and cannot be integrated into a static tool.
-	msgs := []message.Message{
-		&common.MessageCommandLong{},
-		&common.MessageCommandAck{},
-		&common.MessageCommandInt{},
-	}
-	if !cli.HbDisable || !cli.StreamreqDisable {
-		msgs = append(msgs, &common.MessageHeartbeat{})
-	}
-	if !cli.StreamreqDisable {
-		msgs = append(msgs, &common.MessageRequestDataStream{})
-	}
-	dialect := &dialect.Dialect{Version: 3, Messages: msgs}
 
 	ctx, ctxCancel := context.WithCancel(context.Background())
 
@@ -208,8 +223,8 @@ func newProgram(args []string) (*program, error) {
 	}
 
 	p.node, err = gomavlib.NewNode(gomavlib.NodeConf{
-		Endpoints: econfs,
-		Dialect:   dialect,
+		Endpoints: endpointConfs,
+		Dialect:   generateDialect(cli.HbDisable, cli.StreamreqDisable),
 		OutVersion: func() gomavlib.Version {
 			if cli.HbVersion == "2" {
 				return gomavlib.V2
@@ -239,9 +254,11 @@ func newProgram(args []string) (*program, error) {
 		return nil, err
 	}
 
-	p.nodeHandler, err = newNodeHandler(
+	p.messageHandler, err = newMessageHandler(
 		ctx,
 		&p.wg,
+		cli.StreamreqDisable,
+		p.node,
 	)
 	if err != nil {
 		ctxCancel()
@@ -256,9 +273,9 @@ func newProgram(args []string) (*program, error) {
 
 	log.Printf("mavp2p %s", version)
 	log.Printf("router started with %d %s",
-		len(econfs),
+		len(endpointConfs),
 		func() string {
-			if len(econfs) == 1 {
+			if len(endpointConfs) == 1 {
 				return "endpoint"
 			}
 			return "endpoints"
@@ -293,7 +310,7 @@ func (p *program) run() {
 
 			case *gomavlib.EventChannelClose:
 				log.Printf("channel closed: %s", evt.Channel)
-				p.nodeHandler.onEventChannelClose(evt)
+				p.messageHandler.onEventChannelClose(evt)
 
 			case *gomavlib.EventStreamRequested:
 				log.Printf("stream requested to chan=%s sid=%d cid=%d", evt.Channel,
@@ -303,54 +320,7 @@ func (p *program) run() {
 				if cli.Print {
 					log.Printf("%#v, %#v\n", evt.Frame, evt.Message())
 				}
-
-				p.nodeHandler.onEventFrame(evt)
-
-				// if automatic stream requests are enabled, block manual stream requests
-				if !cli.StreamreqDisable {
-					if _, ok := evt.Message().(*common.MessageRequestDataStream); ok {
-						continue
-					}
-				}
-
-				routeMsg := false // Flag to mark a msg for routing
-				targetSystem := uint8(0)
-				targetComponent := uint8(0)
-				switch msg := evt.Message().(type) {
-				case *common.MessageCommandLong:
-					routeMsg = true
-					targetSystem = msg.TargetSystem
-					targetComponent = msg.TargetComponent
-				case *common.MessageCommandAck:
-					routeMsg = true
-					targetSystem = msg.TargetSystem
-					targetComponent = msg.TargetComponent
-				case *common.MessageCommandInt:
-					routeMsg = true
-					targetSystem = msg.TargetSystem
-					targetComponent = msg.TargetComponent
-				}
-
-				if routeMsg {
-					if targetSystem > 0 { // Route only if it's non-broadcast command
-						for remoteNode := range p.nodeHandler.remoteNodes { // Iterates through connected nodes
-							if remoteNode.SystemID == targetSystem {
-								if remoteNode.ComponentID == targetComponent ||
-									targetComponent < 1 { // Route if compid matches or is a broadcast
-									if remoteNode.Channel != evt.Channel { // Prevents Loops
-										p.node.WriteFrameTo(remoteNode.Channel, evt.Frame)
-									} else {
-										log.Println("Warning: channel ", remoteNode.Channel, " attempted to send to itself, discarding ")
-									}
-								}
-							}
-						}
-						continue
-					}
-				}
-
-				// route message to every other channel
-				p.node.WriteFrameExcept(evt.Channel, evt.Frame)
+				p.messageHandler.onEventFrame(evt)
 
 			case *gomavlib.EventParseError:
 				p.errorHandler.onEventError(evt)
