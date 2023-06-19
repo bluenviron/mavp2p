@@ -187,14 +187,18 @@ func newProgram(args []string) (*program, error) {
 
 	// decode/encode only a minimal set of messages.
 	// other messages change too frequently and cannot be integrated into a static tool.
-	msgs := []message.Message{}
+	msgs := []message.Message{
+		&common.MessageCommandLong{},
+		&common.MessageCommandAck{},
+		&common.MessageCommandInt{},
+	}
 	if !cli.HbDisable || !cli.StreamreqDisable {
 		msgs = append(msgs, &common.MessageHeartbeat{})
 	}
 	if !cli.StreamreqDisable {
 		msgs = append(msgs, &common.MessageRequestDataStream{})
 	}
-	dialect := &dialect.Dialect{3, msgs} //nolint:govet
+	dialect := &dialect.Dialect{Version: 3, Messages: msgs}
 
 	ctx, ctxCancel := context.WithCancel(context.Background())
 
@@ -305,6 +309,42 @@ func (p *program) run() {
 				// if automatic stream requests are enabled, block manual stream requests
 				if !cli.StreamreqDisable {
 					if _, ok := evt.Message().(*common.MessageRequestDataStream); ok {
+						continue
+					}
+				}
+
+				routeMsg := false // Flag to mark a msg for routing
+				targetSystem := uint8(0)
+				targetComponent := uint8(0)
+				switch msg := evt.Message().(type) {
+				case *common.MessageCommandLong:
+					routeMsg = true
+					targetSystem = msg.TargetSystem
+					targetComponent = msg.TargetComponent
+				case *common.MessageCommandAck:
+					routeMsg = true
+					targetSystem = msg.TargetSystem
+					targetComponent = msg.TargetComponent
+				case *common.MessageCommandInt:
+					routeMsg = true
+					targetSystem = msg.TargetSystem
+					targetComponent = msg.TargetComponent
+				}
+
+				if routeMsg {
+					if targetSystem > 0 { // Route only if it's non-broadcast command
+						for remoteNode := range p.nodeHandler.remoteNodes { // Iterates through connected nodes
+							if remoteNode.SystemID == targetSystem {
+								if remoteNode.ComponentID == targetComponent ||
+									targetComponent < 1 { // Route if compid matches or is a broadcast
+									if remoteNode.Channel != evt.Channel { // Prevents Loops
+										p.node.WriteFrameTo(remoteNode.Channel, evt.Frame)
+									} else {
+										log.Println("Warning: channel ", remoteNode.Channel, " attempted to send to itself, discarding ")
+									}
+								}
+							}
+						}
 						continue
 					}
 				}
