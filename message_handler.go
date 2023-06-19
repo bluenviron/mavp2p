@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"reflect"
 	"sync"
 	"time"
 
@@ -16,16 +17,15 @@ const (
 	nodeInactiveAfter = 30 * time.Second
 )
 
+var zero reflect.Value
+
 func getTarget(msg message.Message) (byte, byte, bool) {
-	switch msg := msg.(type) {
-	case *common.MessageCommandLong:
-		return msg.TargetSystem, msg.TargetComponent, true
+	rv := reflect.ValueOf(msg).Elem()
+	ts := rv.FieldByName("TargetSystem")
+	tc := rv.FieldByName("TargetComponent")
 
-	case *common.MessageCommandAck:
-		return msg.TargetSystem, msg.TargetComponent, true
-
-	case *common.MessageCommandInt:
-		return msg.TargetSystem, msg.TargetComponent, true
+	if ts != zero && tc != zero {
+		return byte(ts.Uint()), byte(tc.Uint()), true
 	}
 
 	return 0, 0, false
