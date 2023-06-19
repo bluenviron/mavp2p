@@ -25,7 +25,7 @@ func (i remoteNodeKey) String() string {
 	return fmt.Sprintf("chan=%s sid=%d cid=%d", i.Channel, i.SystemID, i.ComponentID)
 }
 
-type nodeHandler struct {
+type messageHandler struct {
 	ctx              context.Context
 	wg               *sync.WaitGroup
 	streamreqDisable bool
@@ -35,13 +35,13 @@ type nodeHandler struct {
 	remoteNodes     map[remoteNodeKey]time.Time
 }
 
-func newNodeHandler(
+func newMessageHandler(
 	ctx context.Context,
 	wg *sync.WaitGroup,
 	streamreqDisable bool,
 	node *gomavlib.Node,
-) (*nodeHandler, error) {
-	nh := &nodeHandler{
+) (*messageHandler, error) {
+	nh := &messageHandler{
 		ctx:              ctx,
 		wg:               wg,
 		streamreqDisable: streamreqDisable,
@@ -55,7 +55,7 @@ func newNodeHandler(
 	return nh, nil
 }
 
-func (nh *nodeHandler) run() {
+func (nh *messageHandler) run() {
 	defer nh.wg.Done()
 
 	// delete remote nodes after a period of inactivity
@@ -82,7 +82,7 @@ func (nh *nodeHandler) run() {
 	}
 }
 
-func (nh *nodeHandler) onEventFrame(evt *gomavlib.EventFrame) {
+func (nh *messageHandler) onEventFrame(evt *gomavlib.EventFrame) {
 	key := remoteNodeKey{
 		Channel:     evt.Channel,
 		SystemID:    evt.SystemID(),
@@ -147,7 +147,7 @@ func (nh *nodeHandler) onEventFrame(evt *gomavlib.EventFrame) {
 	nh.node.WriteFrameExcept(evt.Channel, evt.Frame)
 }
 
-func (nh *nodeHandler) onEventChannelClose(evt *gomavlib.EventChannelClose) {
+func (nh *messageHandler) onEventChannelClose(evt *gomavlib.EventChannelClose) {
 	nh.remoteNodeMutex.Lock()
 	defer nh.remoteNodeMutex.Unlock()
 

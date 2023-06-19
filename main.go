@@ -103,12 +103,12 @@ var cli struct {
 }
 
 type program struct {
-	ctx          context.Context
-	ctxCancel    func()
-	wg           sync.WaitGroup
-	node         *gomavlib.Node
-	errorHandler *errorHandler
-	nodeHandler  *nodeHandler
+	ctx            context.Context
+	ctxCancel      func()
+	wg             sync.WaitGroup
+	node           *gomavlib.Node
+	errorHandler   *errorHandler
+	messageHandler *messageHandler
 }
 
 func newProgram(args []string) (*program, error) {
@@ -239,7 +239,7 @@ func newProgram(args []string) (*program, error) {
 		return nil, err
 	}
 
-	p.nodeHandler, err = newNodeHandler(
+	p.messageHandler, err = newMessageHandler(
 		ctx,
 		&p.wg,
 		cli.StreamreqDisable,
@@ -295,7 +295,7 @@ func (p *program) run() {
 
 			case *gomavlib.EventChannelClose:
 				log.Printf("channel closed: %s", evt.Channel)
-				p.nodeHandler.onEventChannelClose(evt)
+				p.messageHandler.onEventChannelClose(evt)
 
 			case *gomavlib.EventStreamRequested:
 				log.Printf("stream requested to chan=%s sid=%d cid=%d", evt.Channel,
@@ -305,7 +305,7 @@ func (p *program) run() {
 				if cli.Print {
 					log.Printf("%#v, %#v\n", evt.Frame, evt.Message())
 				}
-				p.nodeHandler.onEventFrame(evt)
+				p.messageHandler.onEventFrame(evt)
 
 			case *gomavlib.EventParseError:
 				p.errorHandler.onEventError(evt)
