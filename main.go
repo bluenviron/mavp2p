@@ -92,7 +92,6 @@ var cli struct {
 	Version            bool `help:"print version."`
 	Quiet              bool `short:"q" help:"suppress info messages."`
 	Print              bool `help:"print routed frames."`
-	PrintRoutes        bool `help:"print routes applied for messages with targets."`
 	PrintErrors        bool
 	HbDisable          bool   `help:"disable heartbeats."`
 	HbVersion          string `enum:"1,2" help:"set mavlink version of heartbeats." default:"1"`
@@ -339,9 +338,6 @@ func (p *program) run() {
 								if remoteNode.ComponentID == targetComponent ||
 									targetComponent < 1 { // Route if compid matches or is a broadcast
 									if remoteNode.Channel != evt.Channel { // Prevents Loops
-										if cli.PrintRoutes {
-											log.Println("Routing msg ", evt.Message().GetID(), " from ", evt.Channel, "--->", remoteNode.Channel)
-										}
 										p.node.WriteFrameTo(remoteNode.Channel, evt.Frame)
 									} else {
 										log.Println("Warning: channel ", remoteNode.Channel, " attempted to send to itself, discarding ")
