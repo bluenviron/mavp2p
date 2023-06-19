@@ -14,7 +14,9 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/bluenviron/gomavlib/v2"
+	"github.com/bluenviron/gomavlib/v2/pkg/dialect"
 	"github.com/bluenviron/gomavlib/v2/pkg/dialects/common"
+	"github.com/bluenviron/gomavlib/v2/pkg/message"
 )
 
 var version = "v0.0.0"
@@ -184,6 +186,21 @@ func newProgram(args []string) (*program, error) {
 		econfs[i] = conf
 	}
 
+	// decode/encode only a minimal set of messages.
+	// other messages change too frequently and cannot be integrated into a static tool.
+	msgs := []message.Message{
+		&common.MessageCommandLong{},
+		&common.MessageCommandAck{},
+		&common.MessageCommandInt{},
+	}
+	if !cli.HbDisable || !cli.StreamreqDisable {
+		msgs = append(msgs, &common.MessageHeartbeat{})
+	}
+	if !cli.StreamreqDisable {
+		msgs = append(msgs, &common.MessageRequestDataStream{})
+	}
+	dialect := &dialect.Dialect{Version: 3, Messages: msgs}
+
 	ctx, ctxCancel := context.WithCancel(context.Background())
 
 	p := &program{
@@ -193,7 +210,7 @@ func newProgram(args []string) (*program, error) {
 
 	p.node, err = gomavlib.NewNode(gomavlib.NodeConf{
 		Endpoints: econfs,
-		Dialect:   common.Dialect,
+		Dialect:   dialect,
 		OutVersion: func() gomavlib.Version {
 			if cli.HbVersion == "2" {
 				return gomavlib.V2
