@@ -3,6 +3,7 @@
 
 [![Test](https://github.com/bluenviron/mavp2p/workflows/test/badge.svg)](https://github.com/bluenviron/mavp2p/actions?query=workflow:test)
 [![Lint](https://github.com/bluenviron/mavp2p/workflows/lint/badge.svg)](https://github.com/bluenviron/mavp2p/actions?query=workflow:lint)
+[![CodeCov](https://codecov.io/gh/bluenviron/mavp2p/branch/main/graph/badge.svg)](https://app.codecov.io/gh/bluenviron/mavp2p/branch/main)
 [![Release](https://img.shields.io/github/v/release/bluenviron/mavp2p)](https://github.com/bluenviron/mavp2p/releases)
 [![Docker Hub](https://img.shields.io/badge/docker-aler9/mavp2p-blue)](https://hub.docker.com/r/aler9/mavp2p)
 
