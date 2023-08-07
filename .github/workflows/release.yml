@@ -6,13 +6,30 @@ on:
     - 'v*'
 
 jobs:
-  github:
-    runs-on: ubuntu-20.04
+  binaries:
+    runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - run: make binaries
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: binaries
+        path: binaries
+
+  github:
+    needs: binaries
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: binaries
+        path: binaries
 
     - uses: actions/github-script@v6
       with:
@@ -42,10 +59,16 @@ jobs:
           }
 
   dockerhub:
-    runs-on: ubuntu-20.04
+    needs: binaries
+    runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: binaries
+        path: binaries
 
     - run: make dockerhub
       env:

@@ -5,7 +5,7 @@
 [![Lint](https://github.com/bluenviron/mavp2p/workflows/lint/badge.svg)](https://github.com/bluenviron/mavp2p/actions?query=workflow:lint)
 [![CodeCov](https://codecov.io/gh/bluenviron/mavp2p/branch/main/graph/badge.svg)](https://app.codecov.io/gh/bluenviron/mavp2p/branch/main)
 [![Release](https://img.shields.io/github/v/release/bluenviron/mavp2p)](https://github.com/bluenviron/mavp2p/releases)
-[![Docker Hub](https://img.shields.io/badge/docker-aler9/mavp2p-blue)](https://hub.docker.com/r/aler9/mavp2p)
+[![Docker Hub](https://img.shields.io/badge/docker-bluenviron/mavp2p-blue)](https://hub.docker.com/r/bluenviron/mavp2p)
 
 _mavp2p_ is a flexible and efficient Mavlink proxy / bridge / router, implemented in the form of a command-line utility. It is used primarily to link UAV flight controllers, connected through a serial port, with ground stations on a network, but can be used to build any kind of routing involving serial, TCP and UDP, allowing communication across different physical layers or transport layers.
 
@@ -44,10 +44,10 @@ Download and extract a standalone binary from the [release page](https://github.
 
 ### Docker image
 
-There's a image available at `aler9/mavp2p`:
+There's a image available at `bluenviron/mavp2p`:
 
 ```
-docker run --rm -it --network=host -e COLUMNS=$COLUMNS aler9/mavp2p
+docker run --rm -it --network=host bluenviron/mavp2p
 ```
 
 ### OpenWRT package
