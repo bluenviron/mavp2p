@@ -1,26 +1,25 @@
-define DOCKERFILE_DOCKERHUB
-FROM --platform=linux/amd64 $(BASE_IMAGE) AS build
-RUN apk add --no-cache git
-WORKDIR /s
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . ./
-ARG VERSION
-ARG OPTS
-RUN export CGO_ENABLED=0 $${OPTS} \
-	&& go build -ldflags "-X main.version=$$VERSION" -o /mavp2p
+DOCKER_REPOSITORY = bluenviron/mavp2p
 
+define DOCKERFILE_DOCKERHUB
 FROM scratch
-COPY --from=build /mavp2p /
+ARG TARGETPLATFORM
+ADD tmp/binaries/$$TARGETPLATFORM.tar.gz /
 ENTRYPOINT [ "/mavp2p" ]
 endef
 export DOCKERFILE_DOCKERHUB
 
 dockerhub:
-	$(eval export DOCKER_CLI_EXPERIMENTAL=enabled)
-	$(eval VERSION := $(shell git describe --tags))
+	$(eval VERSION := $(shell git describe --tags | tr -d v))
 
 	docker login -u $(DOCKER_USER) -p $(DOCKER_PASSWORD)
+
+	rm -rf tmp
+	mkdir -p tmp tmp/binaries/linux/arm
+
+	cp binaries/*linux_amd64.tar.gz tmp/binaries/linux/amd64.tar.gz
+	cp binaries/*linux_armv6.tar.gz tmp/binaries/linux/arm/v6.tar.gz
+	cp binaries/*linux_armv7.tar.gz tmp/binaries/linux/arm/v7.tar.gz
+	cp binaries/*linux_arm64v8.tar.gz tmp/binaries/linux/arm64.tar.gz
 
 	docker buildx rm builder 2>/dev/null || true
 	rm -rf $$HOME/.docker/manifests/*
@@ -28,47 +27,10 @@ dockerhub:
 
 	echo "$$DOCKERFILE_DOCKERHUB" | docker buildx build . -f - \
 	--provenance=false \
-	--platform=linux/amd64 \
-	--build-arg VERSION=$(VERSION) \
-	--push -t aler9/mavp2p:$(VERSION)-amd64 --build-arg OPTS="GOOS=linux GOARCH=amd64"
-
-	echo "$$DOCKERFILE_DOCKERHUB" | docker buildx build . -f - \
-	--provenance=false \
-	--platform=linux/arm/v6 \
-	--build-arg VERSION=$(VERSION) \
-	--push -t aler9/mavp2p:$(VERSION)-armv6 --build-arg OPTS="GOOS=linux GOARCH=arm GOARM=6"
-
-	echo "$$DOCKERFILE_DOCKERHUB" | docker buildx build . -f - \
-	--provenance=false \
-	--platform=linux/arm/v7 \
-	--build-arg VERSION=$(VERSION) \
-	--push -t aler9/mavp2p:$(VERSION)-armv7 --build-arg OPTS="GOOS=linux GOARCH=arm GOARM=7"
-
-	echo "$$DOCKERFILE_DOCKERHUB" | docker buildx build . -f - \
-	--provenance=false \
-	--platform=linux/arm64/v8 \
-	--build-arg VERSION=$(VERSION) \
-	--push -t aler9/mavp2p:$(VERSION)-arm64v8 --build-arg OPTS="GOOS=linux GOARCH=arm64"
-
-	docker manifest create aler9/mavp2p:$(VERSION) \
-	$(foreach ARCH,amd64 armv6 armv7 arm64v8,aler9/mavp2p:$(VERSION)-$(ARCH))
-	docker manifest push aler9/mavp2p:$(VERSION)
-
-	docker manifest create aler9/mavp2p:latest-amd64 aler9/mavp2p:$(VERSION)-amd64
-	docker manifest push aler9/mavp2p:latest-amd64
-
-	docker manifest create aler9/mavp2p:latest-armv6 aler9/mavp2p:$(VERSION)-armv6
-	docker manifest push aler9/mavp2p:latest-armv6
-
-	docker manifest create aler9/mavp2p:latest-armv7 aler9/mavp2p:$(VERSION)-armv7
-	docker manifest push aler9/mavp2p:latest-armv7
-
-	docker manifest create aler9/mavp2p:latest-arm64v8 aler9/mavp2p:$(VERSION)-arm64v8
-	docker manifest push aler9/mavp2p:latest-arm64v8
-
-	docker manifest create aler9/mavp2p:latest \
-	$(foreach ARCH,amd64 armv6 armv7 arm64v8,aler9/mavp2p:$(VERSION)-$(ARCH))
-	docker manifest push aler9/mavp2p:latest
+	--platform=linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8 \
+	-t $(DOCKER_REPOSITORY):$(VERSION) \
+	-t $(DOCKER_REPOSITORY):latest \
+	--push
 
 	docker buildx rm builder
 	rm -rf $$HOME/.docker/manifests/*
