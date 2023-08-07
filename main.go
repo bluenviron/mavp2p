@@ -144,10 +144,13 @@ var cli struct {
 	Quiet              bool `short:"q" help:"suppress info messages."`
 	Print              bool `help:"print routed frames."`
 	PrintErrors        bool
-	HbDisable          bool   `help:"disable heartbeats."`
-	HbVersion          string `enum:"1,2" help:"set mavlink version of heartbeats." default:"1"`
-	HbSystemid         int    `default:"125"`
-	HbPeriod           int    `help:"set period of heartbeats." default:"5"`
+	ReadTimeout        time.Duration `help:"timeout of read operations." default:"10s"`
+	WriteTimeout       time.Duration `help:"timeout of write operations." default:"10s"`
+	IdleTimeout        time.Duration `help:"disconnect idle connections after a timeout." default:"60s"`
+	HbDisable          bool          `help:"disable heartbeats."`
+	HbVersion          string        `enum:"1,2" help:"set mavlink version of heartbeats." default:"1"`
+	HbSystemid         int           `default:"125"`
+	HbPeriod           int           `help:"set period of heartbeats." default:"5"`
 	StreamreqDisable   bool
 	StreamreqFrequency int      `help:"set the stream frequency to request." default:"4"`
 	Endpoints          []string `arg:"" optional:""`
@@ -238,6 +241,9 @@ func newProgram(args []string) (*program, error) {
 		HeartbeatPeriod:        (time.Duration(cli.HbPeriod) * time.Second),
 		StreamRequestEnable:    !cli.StreamreqDisable,
 		StreamRequestFrequency: cli.StreamreqFrequency,
+		ReadTimeout:            cli.ReadTimeout,
+		WriteTimeout:           cli.WriteTimeout,
+		IdleTimeout:            cli.IdleTimeout,
 	})
 	if err != nil {
 		ctxCancel()
