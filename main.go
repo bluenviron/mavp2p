@@ -211,7 +211,7 @@ func newProgram(args []string) (*program, error) {
 
 	// print usage if no args are provided
 	if len(os.Args) <= 1 {
-		kongCtx.PrintUsage(false)
+		kongCtx.PrintUsage(false) //nolint:errcheck
 		os.Exit(1)
 	}
 
