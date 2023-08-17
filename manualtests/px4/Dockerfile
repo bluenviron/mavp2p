@@ -1,4 +1,4 @@
-FROM amd64/debian:stretch-slim
+FROM amd64/debian:buster-slim
 
 # refs
 # https://dev.px4.io/en/simulation/
@@ -20,15 +20,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python-toml \
     python-numpy \
     python-yaml \
+    gazebo9 \
+    libgazebo9-dev \
+    libopencv-dev \
+    protobuf-compiler \
+    libeigen3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install jinja2
+RUN pip install jinja2==2.11.3
 
-RUN echo "deb http://deb.debian.org/debian buster main" >> /etc/apt/sources.list \
-    && apt-get update && apt-get install -y --no-install-recommends -t buster \
-    gazebo9 libgazebo9-dev libopencv-dev protobuf-compiler libeigen3-dev
-
-RUN git clone -b v1.9.0-beta1 https://github.com/PX4/Firmware px4
+RUN git clone -b v1.9.0 --depth=1 https://github.com/PX4/Firmware px4
 
 WORKDIR /px4
 

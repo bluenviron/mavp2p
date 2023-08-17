@@ -7,7 +7,7 @@ services:
   bridge:
     build:
       context: ../
-      dockerfile: test/mavp2p/Dockerfile
+      dockerfile: manualtests/mavp2p/Dockerfile
     read_only: yes
     command: >
       --hb-systemid=135
