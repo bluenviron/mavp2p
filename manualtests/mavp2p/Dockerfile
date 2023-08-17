@@ -1,4 +1,4 @@
-FROM amd64/golang:1.11-stretch
+FROM golang:1.20
 
 WORKDIR /src
 
