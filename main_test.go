@@ -61,7 +61,8 @@ func TestBroadcast(t *testing.T) {
 		Z:        3.4,
 	}
 
-	pub.WriteMessageAll(msg)
+	err = pub.WriteMessageAll(msg)
+	require.NoError(t, err)
 
 	<-sub.Events()
 	evt = <-sub.Events()
@@ -124,17 +125,19 @@ func TestTarget(t *testing.T) {
 	<-sub1.Events()
 	<-sub2.Events()
 
-	sub1.WriteMessageAll(&common.MessageHeartbeat{
+	err = sub1.WriteMessageAll(&common.MessageHeartbeat{
 		Type:           common.MAV_TYPE_GCS,
 		SystemStatus:   4,
 		MavlinkVersion: 3,
 	})
+	require.NoError(t, err)
 
-	sub2.WriteMessageAll(&common.MessageHeartbeat{
+	err = sub2.WriteMessageAll(&common.MessageHeartbeat{
 		Type:           common.MAV_TYPE_GCS,
 		SystemStatus:   4,
 		MavlinkVersion: 3,
 	})
+	require.NoError(t, err)
 
 	for i := 0; i < 2; i++ {
 		evt := <-pub.Events()
@@ -153,7 +156,8 @@ func TestTarget(t *testing.T) {
 		Command:         common.MAV_CMD_NAV_FOLLOW,
 	}
 
-	pub.WriteMessageAll(msg)
+	err = pub.WriteMessageAll(msg)
+	require.NoError(t, err)
 
 	<-sub1.Events()
 	evt := <-sub1.Events()
@@ -207,11 +211,12 @@ func TestTargetNotFound(t *testing.T) {
 	<-pub.Events()
 	<-sub.Events()
 
-	sub.WriteMessageAll(&common.MessageHeartbeat{
+	err = sub.WriteMessageAll(&common.MessageHeartbeat{
 		Type:           common.MAV_TYPE_GCS,
 		SystemStatus:   4,
 		MavlinkVersion: 3,
 	})
+	require.NoError(t, err)
 
 	evt := <-pub.Events()
 	eventFr, ok := evt.(*gomavlib.EventFrame)
@@ -228,7 +233,8 @@ func TestTargetNotFound(t *testing.T) {
 		Command:         common.MAV_CMD_NAV_FOLLOW,
 	}
 
-	pub.WriteMessageAll(msg)
+	err = pub.WriteMessageAll(msg)
+	require.NoError(t, err)
 
 	evt = <-sub.Events()
 	eventFr, ok = evt.(*gomavlib.EventFrame)
