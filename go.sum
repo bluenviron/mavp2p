@@ -3,8 +3,8 @@ github.com/alecthomas/assert/v2 v2.1.0 h1:tbredtNcQnoSd3QBhQWI7QZ3XHOVkw1Moklp2o
 github.com/alecthomas/kong v0.8.0 h1:ryDCzutfIqJPnNn0omnrgHLbAggDQM2VWHikE1xqK7s=
 github.com/alecthomas/kong v0.8.0/go.mod h1:n1iCIO2xS46oE8ZfYCNDqdR0b0wZNrXAIAqro/2132U=
 github.com/alecthomas/repr v0.1.0 h1:ENn2e1+J3k09gyj2shc0dHr/yjaWSHRlrJ4DPMevDqE=
-github.com/bluenviron/gomavlib/v2 v2.0.4 h1:fXi4xY41Nk9avDdcb7/uqT5qu3QEwiSUfifUFzH5KZg=
-github.com/bluenviron/gomavlib/v2 v2.0.4/go.mod h1:omnSr00XvG6HVnDSM1vYgnvsVD/ihoPSV84cv/Km7rA=
+github.com/bluenviron/gomavlib/v2 v2.1.0 h1:Tilg+YJq98NjL8vYI7m0DarNyEl9xuyn2oU5/9lB8go=
+github.com/bluenviron/gomavlib/v2 v2.1.0/go.mod h1:omnSr00XvG6HVnDSM1vYgnvsVD/ihoPSV84cv/Km7rA=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
