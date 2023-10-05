@@ -31,7 +31,7 @@ Features:
 * [Usage](#usage)
 * [Comparison with similar software](#comparison-with-similar-software)
 * [Full command-line usage](#full-command-line-usage)
-* [Standards](#standards)
+* [Specifications](#specifications)
 * [Links](#links)
 
 ## Installation
@@ -128,55 +128,48 @@ _mavp2p_ vs _mavlink-router_
 ## Full command-line usage
 
 ```
-usage: mavp2p [<flags>] [<endpoints>...]
+Usage: mavp2p [<endpoints> ...]
 
 mavp2p v0.0.0
 
-Link together Mavlink endpoints.
+Arguments:
+  [<endpoints> ...]    Space-separated list of endpoints. At least one endpoint is required. Possible endpoints types are:
+
+                       udpc:dest_ip:port (udp, client mode)
+
+                       udpb:broadcast_ip:port (udp, broadcast mode)
+
+                       tcps:listen_ip:port (tcp, server mode)
+
+                       tcpc:dest_ip:port (tcp, client mode)
+
+                       serial:port:baudrate (serial)
+
+                       udps:listen_ip:port (udp, server mode)
 
 Flags:
-      --help                     Show context-sensitive help (also try
-                                 --help-long and --help-man).
-      --version                  print version
-  -q, --quiet                    suppress info messages
-      --print                    print routed frames
-      --print-errors             print parse errors singularly, instead of
-                                 printing only their quantity every 5 seconds
-      --hb-disable               disable heartbeats
-      --hb-version=1             set mavlink version of heartbeats
-      --hb-systemid=125          set system id of heartbeats. it is
-                                 recommended to set a different system
-                                 id for each router in the network
-      --hb-period=5              set period of heartbeats
-      --streamreq-disable        do not request streams to Ardupilot
-                                 devices, that need an explicit request
-                                 in order to emit telemetry streams.
-                                 this task is usually delegated to the
-                                 router, in order to avoid conflicts when
-                                 multiple ground stations are active
-      --streamreq-frequency=4    set the stream frequency to request
-
-Args:
-  [<endpoints>]  Space-separated list of endpoints. At least one
-                 endpoint is required. Possible endpoints kinds are:
-
-                 udps:listen_ip:port (udp, server mode)
-
-                 udpc:dest_ip:port (udp, client mode)
-
-                 udpb:broadcast_ip:port (udp, broadcast mode)
-
-                 tcps:listen_ip:port (tcp, server mode)
-
-                 tcpc:dest_ip:port (tcp, client mode)
-
-                 serial:port:baudrate (serial)
-
+  -h, --help                     Show context-sensitive help.
+      --version                  print version.
+  -q, --quiet                    suppress info messages.
+      --print                    print routed frames.
+      --print-errors             print parse errors singularly, instead of printing only their quantity every 5 seconds.
+      --read-timeout=10s         timeout of read operations.
+      --write-timeout=10s        timeout of write operations.
+      --idle-timeout=60s         disconnect idle connections after a timeout.
+      --hb-disable               disable heartbeats.
+      --hb-version=1             set mavlink version of heartbeats.
+      --hb-systemid=125          set system ID of heartbeats. it is recommended to set a different system id for each router in the network.
+      --hb-componentid=191       set component ID of heartbeats.
+      --hb-period=5              set period of heartbeats.
+      --streamreq-disable        do not request streams to Ardupilot devices, that need an explicit request
+                                 in order to emit telemetry streams. this task is usually delegated to the router,
+                                 in order to avoid conflicts when multiple ground stations are active.
+      --streamreq-frequency=4    set the stream frequency to request.
 ```
 
-## Standards
+## Specifications
 
-* [Mavlink standards](https://github.com/bluenviron/gomavlib#standards)
+* [Mavlink specifications](https://github.com/bluenviron/gomavlib#specifications)
 
 ## Links
 

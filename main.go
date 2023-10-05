@@ -148,8 +148,9 @@ var cli struct {
 	WriteTimeout       time.Duration `help:"timeout of write operations." default:"10s"`
 	IdleTimeout        time.Duration `help:"disconnect idle connections after a timeout." default:"60s"`
 	HbDisable          bool          `help:"disable heartbeats."`
-	HbVersion          string        `enum:"1,2" help:"set mavlink version of heartbeats." default:"1"`
+	HbVersion          int           `enum:"1,2" help:"set mavlink version of heartbeats." default:"1"`
 	HbSystemid         int           `default:"125"`
+	HbComponentid      int           `help:"set component ID of heartbeats." default:"191"`
 	HbPeriod           int           `help:"set period of heartbeats." default:"5"`
 	StreamreqDisable   bool
 	StreamreqFrequency int      `help:"set the stream frequency to request." default:"4"`
@@ -175,7 +176,7 @@ func newProgram(args []string) (*program, error) {
 				return "print parse errors singularly, instead of printing only their quantity every 5 seconds."
 
 			case "hb-systemid":
-				return "set system id of heartbeats. it is recommended to set a different system id for each router in the network."
+				return "set system ID of heartbeats. it is recommended to set a different system id for each router in the network."
 
 			case "streamreq-disable":
 				return "do not request streams to Ardupilot devices," +
@@ -231,12 +232,13 @@ func newProgram(args []string) (*program, error) {
 		Endpoints: endpointConfs,
 		Dialect:   generateDialect(cli.HbDisable, cli.StreamreqDisable),
 		OutVersion: func() gomavlib.Version {
-			if cli.HbVersion == "2" {
+			if cli.HbVersion == 2 {
 				return gomavlib.V2
 			}
 			return gomavlib.V1
 		}(),
 		OutSystemID:            byte(cli.HbSystemid),
+		OutComponentID:         byte(cli.HbComponentid),
 		HeartbeatDisable:       cli.HbDisable,
 		HeartbeatPeriod:        (time.Duration(cli.HbPeriod) * time.Second),
 		StreamRequestEnable:    !cli.StreamreqDisable,
