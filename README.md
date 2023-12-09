@@ -28,19 +28,23 @@ Features:
 ## Table of contents
 
 * [Installation](#installation)
+  * [Standalone binary](#standalone-binary)
+  * [Docker image](#docker-image)
+  * [OpenWrt binary](#openwrt-binary)
 * [Usage](#usage)
 * [Comparison with similar software](#comparison-with-similar-software)
 * [Full command-line usage](#full-command-line-usage)
+* [Compile from source](#compile-from-source)
 * [Specifications](#specifications)
 * [Links](#links)
 
 ## Installation
 
-There are several installation methods available: standalone binary, Docker image and OpenWRT package.
+There are several installation methods available: standalone binary, Docker image and OpenWRT binary.
 
 ### Standalone binary
 
-Download and extract a standalone binary from the [release page](https://github.com/bluenviron/mavp2p/releases).
+Download and extract a standalone binary from the [release page](https://github.com/bluenviron/mavp2p/releases) that corresponds to your operating system and architecture.
 
 ### Docker image
 
@@ -50,37 +54,11 @@ There's a image available at `bluenviron/mavp2p`:
 docker run --rm -it --network=host bluenviron/mavp2p
 ```
 
-### OpenWRT package
+### OpenWrt binary
 
-1. In a x86 Linux system, download the OpenWRT SDK corresponding to the wanted OpenWRT version and target from the [OpenWRT website](https://downloads.openwrt.org/releases/) and extract it.
+If the architecture of the OpenWrt device is amd64, armv6, armv7 or arm64, use the [standalone binary method](#standalone-binary) and download a Linux binary that corresponds to your architecture.
 
-2. Open a terminal in the SDK folder and setup the SDK:
-
-   ```
-   ./scripts/feeds update -a
-   ./scripts/feeds install -a
-   make defconfig
-   ```
-
-3. Download the server Makefile and set the server version inside the file:
-
-   ```
-   mkdir package/mavp2p
-   wget -O package/mavp2p/Makefile https://raw.githubusercontent.com/bluenviron/mavp2p/main/openwrt.mk
-   sed -i "s/v0.0.0/$(git ls-remote --tags --sort=v:refname https://github.com/bluenviron/mavp2p | tail -n1 | sed 's/.*\///; s/\^{}//')/" package/mavp2p/Makefile
-   ```
-
-4. Compile the server:
-
-   ```
-   make package/mavp2p/compile -j$(nproc)
-   ```
-
-5. Transfer the .ipk file from `bin/packages/*/base` to the OpenWRT system and install it with:
-
-   ```
-   opkg install [ipk-file-name].ipk
-   ```
+Otherwise, [compile the software from source](#openwrt).
 
 ## Usage
 
@@ -166,6 +144,39 @@ Flags:
                                  in order to avoid conflicts when multiple ground stations are active.
       --streamreq-frequency=4    set the stream frequency to request.
 ```
+
+## Compile from source
+
+### Standard
+
+Install git and Go &ge; 1.21. Clone the repository, enter into the folder and start the building process:
+
+```sh
+git clone https://github.com/bluenviron/mavp2p
+cd mavp2p
+CGO_ENABLED=0 go build .
+```
+
+The command will produce the `mavp2p` binary.
+
+### OpenWrt
+
+The compilation procedure is the same as the standard one. On the OpenWrt device, install git and Go:
+
+```sh
+opkg update
+opkg install golang git git-http
+```
+
+Clone the repository, enter into the folder and start the building process:
+
+```sh
+git clone https://github.com/bluenviron/mavp2p
+cd mavp2p
+CGO_ENABLED=0 go build .
+```
+
+The command will produce the `mavp2p` binary.
 
 ## Specifications
 
