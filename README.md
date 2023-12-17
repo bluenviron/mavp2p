@@ -35,6 +35,9 @@ Features:
 * [Comparison with similar software](#comparison-with-similar-software)
 * [Full command-line usage](#full-command-line-usage)
 * [Compile from source](#compile-from-source)
+  * [Standard](#standard)
+  * [OpenWrt](#openwrt)
+  * [Cross compile](#cross-compile)
 * [Specifications](#specifications)
 * [Links](#links)
 
@@ -174,6 +177,46 @@ Clone the repository, enter into the folder and start the building process:
 git clone https://github.com/bluenviron/mavp2p
 cd mavp2p
 CGO_ENABLED=0 go build .
+```
+
+The command will produce the `mavp2p` binary.
+
+If the OpenWrt device doesn't have enough resources to compile, you can [cross compile](#cross-compile) from another machine.
+
+### Cross compile
+
+Cross compilation allows to build an executable for a target machine from another machine with different operating system or architecture. This is useful in case the target machine doesn't have enough resources for compilation or if you don't want to install the compilation dependencies on it.
+
+On the machine you want to use to compile, install git and Go &ge; 1.21. Clone the repository, enter into the folder and start the building process:
+
+```sh
+git clone https://github.com/bluenviron/mavp2p
+cd mavp2p
+CGO_ENABLED=0 GOOS=my_os GOARCH=my_arch go build .
+```
+
+Replace `my_os` and `my_arch` with the operating system and architecture of your target machine. A list of all supported combinations can be obtained with:
+
+```sh
+go tool dist list
+```
+
+For instance:
+
+```sh
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build .
+```
+
+In case of the `arm` architecture, there's an additional flag available, `GOARM`, that allows to set the ARM version:
+
+```sh
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 GOARM=7 go build .
+```
+
+In case of the `mips` architecture, there's an additional flag available, `GOMIPS`, that allows to set additional parameters:
+
+```sh
+CGO_ENABLED=0 GOOS=linux GOARCH=mips GOMIPS=softfloat go build .
 ```
 
 The command will produce the `mavp2p` binary.
