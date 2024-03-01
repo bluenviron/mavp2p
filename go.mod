@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/alecthomas/kong v0.8.1
 	github.com/bluenviron/gomavlib/v2 v2.1.3
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 )
 
 require (
