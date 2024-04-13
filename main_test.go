@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bluenviron/gomavlib/v2"
-	"github.com/bluenviron/gomavlib/v2/pkg/dialects/common"
+	"github.com/bluenviron/gomavlib/v3"
+	"github.com/bluenviron/gomavlib/v3/pkg/dialects/common"
 	"github.com/stretchr/testify/require"
 )
 

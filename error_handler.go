@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bluenviron/gomavlib/v2"
+	"github.com/bluenviron/gomavlib/v3"
 )
 
 type errorHandler struct {
