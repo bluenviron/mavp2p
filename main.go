@@ -14,10 +14,10 @@ import (
 	"time"
 
 	"github.com/alecthomas/kong"
-	"github.com/bluenviron/gomavlib/v2"
-	"github.com/bluenviron/gomavlib/v2/pkg/dialect"
-	"github.com/bluenviron/gomavlib/v2/pkg/dialects/common"
-	"github.com/bluenviron/gomavlib/v2/pkg/message"
+	"github.com/bluenviron/gomavlib/v3"
+	"github.com/bluenviron/gomavlib/v3/pkg/dialect"
+	"github.com/bluenviron/gomavlib/v3/pkg/dialects/common"
+	"github.com/bluenviron/gomavlib/v3/pkg/message"
 )
 
 var version = "v0.0.0"
