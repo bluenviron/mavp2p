@@ -158,6 +158,10 @@ func (mh *messageHandler) onEventFrame(evt *gomavlib.EventFrame) {
 				mh.node.WriteFrameTo(key.channel, evt.Frame) //nolint:errcheck
 				return
 			}
+		} else {
+			log.Printf(
+				"Warning: received message addressed to unexistent node with systemID=%d and componentID=%d",
+				systemID, componentID)
 		}
 	}
 
