@@ -108,6 +108,21 @@ var endpointTypes = map[string]endpointType{
 			return gomavlib.EndpointTCPClient{Address: args}, nil
 		},
 	},
+	"tlog": {
+		"filename",
+		"telemetry log",
+		func(args string) (gomavlib.EndpointConf, error) {
+			fp, err := os.Create(args)
+			if err != nil {
+				return nil, fmt.Errorf("Unable to open file %s", args)
+			}
+			tlog := &TlogWriter{
+				file: fp,
+				Closer: fp,
+			}
+			return gomavlib.EndpointCustom{ReadWriteCloser: tlog}, nil
+		},
+	},
 }
 
 func generateEndpointConfs(endpoints []string) ([]gomavlib.EndpointConf, error) {
