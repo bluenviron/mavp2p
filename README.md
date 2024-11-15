@@ -17,6 +17,7 @@ Features:
   * serial
   * UDP (client, server or broadcast mode)
   * TCP (client or server mode)
+  * Telemetry log
 * Support Mavlink 2.0 and 1.0, support any dialect
 * Emit heartbeats
 * Automatically request streams to Ardupilot devices and block stream requests from ground stations
@@ -127,6 +128,8 @@ Arguments:
                        serial:port:baudrate (serial)
 
                        udps:listen_ip:port (udp, server mode)
+
+                       tlog:filename (telemetry log)
 
 Flags:
   -h, --help                     Show context-sensitive help.
