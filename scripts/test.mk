@@ -10,6 +10,6 @@ export DOCKERFILE_TEST
 test:
 	echo "$$DOCKERFILE_TEST" | docker build -q . -f - -t temp
 	docker run --rm \
-	-v $(PWD):/s -w /s \
+	-v $(shell pwd):/s -w /s \
 	temp \
 	go test -v -race -coverprofile=coverage.txt .
