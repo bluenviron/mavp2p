@@ -8,7 +8,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . ./
 ARG VERSION
-ENV CGO_ENABLED 0
+ENV CGO_ENABLED=0
 RUN rm -rf tmp binaries
 RUN mkdir tmp binaries
 
@@ -45,5 +45,5 @@ binaries:
 	echo "$$DOCKERFILE_BINARIES" | DOCKER_BUILDKIT=1 docker build . -f - \
 	--build-arg VERSION=$$(git describe --tags) \
 	-t temp
-	docker run --rm -v $(PWD):/out \
+	docker run --rm -v $(shell pwd):/out \
 	temp sh -c "rm -rf /out/binaries && cp -r /s/binaries /out/"
