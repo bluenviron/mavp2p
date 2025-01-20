@@ -141,6 +141,9 @@ func (mh *messageHandler) onEventFrame(evt *gomavlib.EventFrame) {
 		}
 	}
 
+	// recalculate the checksum in case the incoming frame was truncated
+	mh.node.FixFrame(evt.Frame)
+
 	// if message has a target, route only to it
 	systemID, componentID, hasTarget := getTarget(evt.Message())
 	if hasTarget && systemID > 0 {
