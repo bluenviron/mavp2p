@@ -32,6 +32,9 @@ Features:
   * [Docker image](#docker-image)
   * [OpenWrt binary](#openwrt-binary)
 * [Usage](#usage)
+* [Connecting popular software](#connecting-popular-software)
+  * [QGroundControl](#qgroundcontrol)
+  * [PX4 Simulator](#px4-simulator)
 * [Comparison with similar software](#comparison-with-similar-software)
 * [Full command-line usage](#full-command-line-usage)
 * [Compile from source](#compile-from-source)
@@ -88,6 +91,48 @@ Create a server that links together all UDP endpoints that connect to it:
 ```
 ./mavp2p udps:0.0.0.0:5600
 ```
+
+## Connecting popular software
+
+### QGroundControl
+
+1. Make sure that mavp2p is started with a UDP server endpoint:
+
+   ```
+   ./mavp2p udps:0.0.0.0:5600
+   ```
+
+2. Install and open QGroundControl.
+
+3. Open _Application Settings_, click on _Comm Links_, _Add_. Fill the form with:
+   * Name: some name
+   * Type: UDP
+   * Port: 0
+   * Server Addresses: mavp2p-ip:5600 (then click _Add Server_)
+
+4. Click _Ok_. Click _Connect_.
+
+### PX4 Simulator
+
+1. Make sure that mavp2p is started with a UDP server endpoint on port 14550:
+
+   ```
+   ./mavp2p udps:0.0.0.0:14550
+   ```
+
+2. [Install PX4 Simulator](https://docs.px4.io/main/en/simulation/).
+
+3. If mavp2p and PX4 are on two different machines, enable Mavlink broadcasting by opening `PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/px4-rc.mavlink`, finding `mavlink start` and adding the `-p` flag:
+
+   ```
+   mavlink start -x -u $udp_gcs_port_local -r 4000000 -f -p
+   ```
+
+4. Start PX4 Simulator:
+
+   ```
+   make px4_sitl gz_x500
+   ```
 
 ## Comparison with similar software
 
