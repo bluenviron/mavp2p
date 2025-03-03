@@ -34,6 +34,7 @@ Features:
 * [Usage](#usage)
 * [Connecting popular software](#connecting-popular-software)
   * [QGroundControl](#qgroundcontrol)
+  * [Mission Planner](#mission-planner)
   * [PX4 Simulator](#px4-simulator)
 * [Comparison with similar software](#comparison-with-similar-software)
 * [Full command-line usage](#full-command-line-usage)
@@ -111,6 +112,18 @@ Create a server that links together all UDP endpoints that connect to it:
    * Server Addresses: mavp2p-ip:5600 (then click _Add Server_)
 
 4. Click _Ok_. Click _Connect_.
+
+### Mission Planner
+
+1. Make sure that mavp2p is started with a TCP server endpoint:
+
+   ```
+   ./mavp2p tcps:0.0.0.0:5601
+   ```
+
+2. Install and open Mission Planner.
+
+3. In the top right corner of the Window, from the select menu, change the value from "AUTO" to "TCP". Then click _Connect_. Insert the mavp2p IP and port.
 
 ### PX4 Simulator
 
