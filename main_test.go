@@ -14,7 +14,7 @@ func TestBroadcast(t *testing.T) {
 	require.NoError(t, err)
 	defer p.close()
 
-	pub, err := gomavlib.NewNode(gomavlib.NodeConf{
+	pub := &gomavlib.Node{
 		Endpoints: []gomavlib.EndpointConf{
 			gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:6666",
@@ -25,11 +25,12 @@ func TestBroadcast(t *testing.T) {
 		OutComponentID:   5,
 		Dialect:          common.Dialect,
 		HeartbeatDisable: true,
-	})
+	}
+	err = pub.Initialize()
 	require.NoError(t, err)
 	defer pub.Close()
 
-	sub, err := gomavlib.NewNode(gomavlib.NodeConf{
+	sub := &gomavlib.Node{
 		Endpoints: []gomavlib.EndpointConf{
 			gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:6666",
@@ -40,7 +41,8 @@ func TestBroadcast(t *testing.T) {
 		OutComponentID:  7,
 		HeartbeatPeriod: 100 * time.Millisecond,
 		Dialect:         common.Dialect,
-	})
+	}
+	err = sub.Initialize()
 	require.NoError(t, err)
 	defer sub.Close()
 
@@ -76,7 +78,7 @@ func TestTarget(t *testing.T) {
 	require.NoError(t, err)
 	defer p.close()
 
-	pub, err := gomavlib.NewNode(gomavlib.NodeConf{
+	pub := &gomavlib.Node{
 		Endpoints: []gomavlib.EndpointConf{
 			gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:6666",
@@ -87,11 +89,12 @@ func TestTarget(t *testing.T) {
 		OutComponentID:   5,
 		Dialect:          common.Dialect,
 		HeartbeatDisable: true,
-	})
+	}
+	err = pub.Initialize()
 	require.NoError(t, err)
 	defer pub.Close()
 
-	sub1, err := gomavlib.NewNode(gomavlib.NodeConf{
+	sub1 := &gomavlib.Node{
 		Endpoints: []gomavlib.EndpointConf{
 			gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:6666",
@@ -102,11 +105,12 @@ func TestTarget(t *testing.T) {
 		OutComponentID:   7,
 		Dialect:          common.Dialect,
 		HeartbeatDisable: true,
-	})
+	}
+	err = sub1.Initialize()
 	require.NoError(t, err)
 	defer sub1.Close()
 
-	sub2, err := gomavlib.NewNode(gomavlib.NodeConf{
+	sub2 := &gomavlib.Node{
 		Endpoints: []gomavlib.EndpointConf{
 			gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:6666",
@@ -117,7 +121,8 @@ func TestTarget(t *testing.T) {
 		OutComponentID:   9,
 		Dialect:          common.Dialect,
 		HeartbeatDisable: true,
-	})
+	}
+	err = sub2.Initialize()
 	require.NoError(t, err)
 	defer sub2.Close()
 
@@ -178,7 +183,7 @@ func TestTargetNotFound(t *testing.T) {
 	require.NoError(t, err)
 	defer p.close()
 
-	pub, err := gomavlib.NewNode(gomavlib.NodeConf{
+	pub := &gomavlib.Node{
 		Endpoints: []gomavlib.EndpointConf{
 			gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:6666",
@@ -189,11 +194,12 @@ func TestTargetNotFound(t *testing.T) {
 		OutComponentID:   5,
 		Dialect:          common.Dialect,
 		HeartbeatDisable: true,
-	})
+	}
+	err = pub.Initialize()
 	require.NoError(t, err)
 	defer pub.Close()
 
-	sub, err := gomavlib.NewNode(gomavlib.NodeConf{
+	sub := &gomavlib.Node{
 		Endpoints: []gomavlib.EndpointConf{
 			gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:6666",
@@ -204,7 +210,8 @@ func TestTargetNotFound(t *testing.T) {
 		OutComponentID:   9,
 		Dialect:          common.Dialect,
 		HeartbeatDisable: true,
-	})
+	}
+	err = sub.Initialize()
 	require.NoError(t, err)
 	defer sub.Close()
 

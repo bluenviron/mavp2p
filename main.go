@@ -228,7 +228,7 @@ func newProgram(args []string) (*program, error) {
 		ctxCancel: ctxCancel,
 	}
 
-	p.node, err = gomavlib.NewNode(gomavlib.NodeConf{
+	p.node = &gomavlib.Node{
 		Endpoints: endpointConfs,
 		Dialect:   generateDialect(cli.HbDisable, cli.StreamreqDisable),
 		OutVersion: func() gomavlib.Version {
@@ -246,7 +246,8 @@ func newProgram(args []string) (*program, error) {
 		ReadTimeout:            cli.ReadTimeout,
 		WriteTimeout:           cli.WriteTimeout,
 		IdleTimeout:            cli.IdleTimeout,
-	})
+	}
+	err = p.node.Initialize()
 	if err != nil {
 		ctxCancel()
 		return nil, err
