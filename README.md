@@ -14,7 +14,7 @@ This project makes use of the [**gomavlib**](https://github.com/bluenviron/gomav
 Features:
 
 * Link together an arbitrary number of different kinds of endpoints:
-  * serial
+  * Serial
   * UDP (client, server or broadcast mode)
   * TCP (client or server mode)
 * Support Mavlink 2.0 and 1.0, support any dialect
