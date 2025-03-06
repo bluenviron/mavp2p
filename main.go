@@ -18,6 +18,7 @@ import (
 	"github.com/bluenviron/gomavlib/v3/pkg/dialect"
 	"github.com/bluenviron/gomavlib/v3/pkg/dialects/common"
 	"github.com/bluenviron/gomavlib/v3/pkg/message"
+	"github.com/bluenviron/mavp2p/pkg/dumpman"
 	"github.com/bluenviron/mavp2p/pkg/errorman"
 	"github.com/bluenviron/mavp2p/pkg/messageman"
 )
@@ -142,20 +143,23 @@ func generateEndpointConfs(endpoints []string) ([]gomavlib.EndpointConf, error) 
 }
 
 var cli struct {
-	Version            bool `help:"print version."`
-	Quiet              bool `short:"q" help:"suppress info messages."`
-	Print              bool `help:"print routed frames."`
+	Version            bool `help:"Print version."`
+	Quiet              bool `short:"q" help:"Suppress info messages."`
+	Print              bool `help:"Print routed frames."`
 	PrintErrors        bool
-	ReadTimeout        time.Duration `help:"timeout of read operations." default:"10s"`
-	WriteTimeout       time.Duration `help:"timeout of write operations." default:"10s"`
-	IdleTimeout        time.Duration `help:"disconnect idle connections after a timeout." default:"60s"`
-	HbDisable          bool          `help:"disable heartbeats."`
-	HbVersion          int           `enum:"1,2" help:"set mavlink version of heartbeats." default:"1"`
+	ReadTimeout        time.Duration `help:"Timeout of read operations." default:"10s"`
+	WriteTimeout       time.Duration `help:"Timeout of write operations." default:"10s"`
+	IdleTimeout        time.Duration `help:"Disconnect idle connections after a timeout." default:"60s"`
+	HbDisable          bool          `help:"Disable heartbeats."`
+	HbVersion          int           `enum:"1,2" help:"Mavlink version of heartbeats." default:"1"`
 	HbSystemid         int           `default:"125"`
-	HbComponentid      int           `help:"set component ID of heartbeats." default:"191"`
-	HbPeriod           int           `help:"set period of heartbeats." default:"5"`
+	HbComponentid      int           `help:"Component ID of heartbeats." default:"191"`
+	HbPeriod           int           `help:"Period of heartbeats." default:"5"`
 	StreamreqDisable   bool
-	StreamreqFrequency int      `help:"set the stream frequency to request." default:"4"`
+	StreamreqFrequency int      `help:"Stream frequency to request." default:"4"`
+	Dump               bool     `help:"Dump telemetry to disk"`
+	DumpFolder         string   `help:"Dump folder" default:"dump/"`
+	DumpFile           string   `help:"Dump file, in time.Format() format" default:"2006-01-02_15-04-05.tlog"`
 	Endpoints          []string `arg:"" optional:""`
 }
 
@@ -166,6 +170,7 @@ type program struct {
 	node       *gomavlib.Node
 	errorMan   *errorman.Manager
 	messageMan *messageman.Manager
+	tlogMan    *dumpman.Manager
 }
 
 func newProgram(args []string) (*program, error) {
@@ -175,15 +180,15 @@ func newProgram(args []string) (*program, error) {
 		kong.ValueFormatter(func(value *kong.Value) string {
 			switch value.Name {
 			case "print-errors":
-				return "print parse errors singularly, instead of printing only their quantity every 5 seconds."
+				return "Print parse errors singularly, instead of printing only their quantity every 5 seconds."
 
 			case "hb-systemid":
-				return "set system ID of heartbeats. it is recommended to set a different system id for each router in the network."
+				return "System ID of heartbeats. It is recommended to set a different system id for each router in the network."
 
 			case "streamreq-disable":
-				return "do not request streams to Ardupilot devices," +
+				return "Do not request streams to Ardupilot devices," +
 					" that need an explicit request in order to emit telemetry streams." +
-					" this task is usually delegated to the router," +
+					" This task is usually delegated to the router," +
 					" in order to avoid conflicts when multiple ground stations are active."
 
 			case "endpoints":
@@ -230,9 +235,11 @@ func newProgram(args []string) (*program, error) {
 		ctxCancel: ctxCancel,
 	}
 
+	dialect := generateDialect(cli.HbDisable, cli.StreamreqDisable)
+
 	p.node = &gomavlib.Node{
 		Endpoints: endpointConfs,
-		Dialect:   generateDialect(cli.HbDisable, cli.StreamreqDisable),
+		Dialect:   dialect,
 		OutVersion: func() gomavlib.Version {
 			if cli.HbVersion == 2 {
 				return gomavlib.V2
@@ -275,6 +282,22 @@ func newProgram(args []string) (*program, error) {
 		Node:             p.node,
 	}
 	err = p.messageMan.Initialize()
+	if err != nil {
+		ctxCancel()
+		p.wg.Wait()
+		p.node.Close()
+		return nil, err
+	}
+
+	p.tlogMan = &dumpman.Manager{
+		Ctx:        ctx,
+		Wg:         &p.wg,
+		Dialect:    dialect,
+		Dump:       cli.Dump,
+		DumpFolder: cli.DumpFolder,
+		DumpFile:   cli.DumpFile,
+	}
+	err = p.tlogMan.Initialize()
 	if err != nil {
 		ctxCancel()
 		p.wg.Wait()
@@ -336,6 +359,7 @@ func (p *program) run() {
 					log.Printf("%#v, %#v\n", evt.Frame, evt.Message())
 				}
 				p.messageMan.ProcessFrame(evt)
+				p.tlogMan.ProcessFrame(evt)
 
 			case *gomavlib.EventParseError:
 				p.errorMan.ProcessError(evt)
