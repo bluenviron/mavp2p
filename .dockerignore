@@ -1,3 +1,4 @@
 # do not add .git, since it is needed to extract the tag
 /binaries
-coverage.txt
+coverage-*.txt
+/dump

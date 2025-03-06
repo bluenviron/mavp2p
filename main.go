@@ -18,6 +18,7 @@ import (
 	"github.com/bluenviron/gomavlib/v3/pkg/dialect"
 	"github.com/bluenviron/gomavlib/v3/pkg/dialects/common"
 	"github.com/bluenviron/gomavlib/v3/pkg/message"
+	"github.com/bluenviron/mavp2p/pkg/dumper"
 	"github.com/bluenviron/mavp2p/pkg/errorman"
 	"github.com/bluenviron/mavp2p/pkg/messageman"
 )
@@ -142,21 +143,24 @@ func generateEndpointConfs(endpoints []string) ([]gomavlib.EndpointConf, error) 
 }
 
 var cli struct {
-	Version            bool `help:"print version."`
-	Quiet              bool `short:"q" help:"suppress info messages."`
-	Print              bool `help:"print routed frames."`
+	Version            bool `help:"Print version."`
+	Quiet              bool `short:"q" help:"Suppress info messages."`
+	Print              bool `help:"Print routed frames."`
 	PrintErrors        bool
-	ReadTimeout        time.Duration `help:"timeout of read operations." default:"10s"`
-	WriteTimeout       time.Duration `help:"timeout of write operations." default:"10s"`
-	IdleTimeout        time.Duration `help:"disconnect idle connections after a timeout." default:"60s"`
-	HbDisable          bool          `help:"disable heartbeats."`
-	HbVersion          int           `enum:"1,2" help:"set mavlink version of heartbeats." default:"1"`
+	ReadTimeout        time.Duration `help:"Timeout of read operations." default:"10s"`
+	WriteTimeout       time.Duration `help:"Timeout of write operations." default:"10s"`
+	IdleTimeout        time.Duration `help:"Disconnect idle connections after a timeout." default:"60s"`
+	HbDisable          bool          `help:"Disable heartbeats."`
+	HbVersion          int           `enum:"1,2" help:"Mavlink version of heartbeats." default:"1"`
 	HbSystemid         int           `default:"125"`
-	HbComponentid      int           `help:"set component ID of heartbeats." default:"191"`
-	HbPeriod           int           `help:"set period of heartbeats." default:"5"`
+	HbComponentid      int           `help:"Component ID of heartbeats." default:"191"`
+	HbPeriod           int           `help:"Period of heartbeats." default:"5"`
 	StreamreqDisable   bool
-	StreamreqFrequency int      `help:"set the stream frequency to request." default:"4"`
-	Endpoints          []string `arg:"" optional:""`
+	StreamreqFrequency int           `help:"Stream frequency to request." default:"4"`
+	Dump               bool          `help:"Dump telemetry to disk"`
+	DumpPath           string        `default:"dump/2006-01-02_15-04-05.tlog"`
+	DumpDuration       time.Duration `help:"Maximum duration of each dump segment" default:"1h"`
+	Endpoints          []string      `arg:"" optional:""`
 }
 
 type program struct {
@@ -166,6 +170,7 @@ type program struct {
 	node       *gomavlib.Node
 	errorMan   *errorman.Manager
 	messageMan *messageman.Manager
+	dumper     *dumper.Dumper
 }
 
 func newProgram(args []string) (*program, error) {
@@ -175,15 +180,15 @@ func newProgram(args []string) (*program, error) {
 		kong.ValueFormatter(func(value *kong.Value) string {
 			switch value.Name {
 			case "print-errors":
-				return "print parse errors singularly, instead of printing only their quantity every 5 seconds."
+				return "Print parse errors singularly, instead of printing only their quantity every 5 seconds."
 
 			case "hb-systemid":
-				return "set system ID of heartbeats. it is recommended to set a different system id for each router in the network."
+				return "System ID of heartbeats. It is recommended to set a different system id for each router in the network."
 
 			case "streamreq-disable":
-				return "do not request streams to Ardupilot devices," +
+				return "Do not request streams to Ardupilot devices," +
 					" that need an explicit request in order to emit telemetry streams." +
-					" this task is usually delegated to the router," +
+					" This task is usually delegated to the router," +
 					" in order to avoid conflicts when multiple ground stations are active."
 
 			case "endpoints":
@@ -193,6 +198,9 @@ func newProgram(args []string) (*program, error) {
 					desc += fmt.Sprintf("%s:%s (%s)\n\n", k, etype.args, etype.desc)
 				}
 				return desc
+
+			case "dump-path":
+				return "Path of dump segments, in Golang's time.Format() format"
 
 			default:
 				return kong.DefaultHelpValueFormatter(value)
@@ -230,9 +238,11 @@ func newProgram(args []string) (*program, error) {
 		ctxCancel: ctxCancel,
 	}
 
+	dialect := generateDialect(cli.HbDisable, cli.StreamreqDisable)
+
 	p.node = &gomavlib.Node{
 		Endpoints: endpointConfs,
-		Dialect:   generateDialect(cli.HbDisable, cli.StreamreqDisable),
+		Dialect:   dialect,
 		OutVersion: func() gomavlib.Version {
 			if cli.HbVersion == 2 {
 				return gomavlib.V2
@@ -280,6 +290,23 @@ func newProgram(args []string) (*program, error) {
 		p.wg.Wait()
 		p.node.Close()
 		return nil, err
+	}
+
+	if cli.Dump {
+		p.dumper = &dumper.Dumper{
+			Ctx:          ctx,
+			Wg:           &p.wg,
+			Dialect:      dialect,
+			DumpPath:     cli.DumpPath,
+			DumpDuration: cli.DumpDuration,
+		}
+		err = p.dumper.Initialize()
+		if err != nil {
+			ctxCancel()
+			p.wg.Wait()
+			p.node.Close()
+			return nil, err
+		}
 	}
 
 	if cli.Quiet {
@@ -336,6 +363,9 @@ func (p *program) run() {
 					log.Printf("%#v, %#v\n", evt.Frame, evt.Message())
 				}
 				p.messageMan.ProcessFrame(evt)
+				if p.dumper != nil {
+					p.dumper.ProcessFrame(evt)
+				}
 
 			case *gomavlib.EventParseError:
 				p.errorMan.ProcessError(evt)

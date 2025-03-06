@@ -21,9 +21,10 @@ Features:
 * Emit heartbeats
 * Automatically request streams to Ardupilot devices and block stream requests from ground stations
 * Route messages by target system ID / component ID
-* Support domain names in place of IPs
+* Use domain names in place of IPs
 * Reconnect to TCP/UDP servers when disconnected, remove inactive TCP/UDP clients
-* Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, arm64, amd64), does not depend on libc and therefore is compatible with lightweight distros (Alpine Linux)
+* Dump telemetry to disk
+* Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, arm64, amd64), independent from libc and compatible with lightweight distros (Alpine Linux)
 
 ## Table of contents
 
@@ -91,6 +92,12 @@ Create a server that links together all UDP endpoints that connect to it:
 
 ```
 ./mavp2p udps:0.0.0.0:5600
+```
+
+Dump telemetry to disk:
+
+```
+./mavp2p udps:0.0.0.0:5600 --dump --dump-folder=dump/
 ```
 
 ## Connecting popular software
@@ -167,12 +174,16 @@ _mavp2p_ vs _mavlink-router_
 ## Full command-line usage
 
 ```
-Usage: mavp2p [<endpoints> ...]
+Usage: mavp2p [<endpoints> ...] [flags]
 
 mavp2p v0.0.0
 
 Arguments:
   [<endpoints> ...]    Space-separated list of endpoints. At least one endpoint is required. Possible endpoints types are:
+
+                       serial:port:baudrate (serial)
+
+                       udps:listen_ip:port (udp, server mode)
 
                        udpc:dest_ip:port (udp, client mode)
 
@@ -182,28 +193,26 @@ Arguments:
 
                        tcpc:dest_ip:port (tcp, client mode)
 
-                       serial:port:baudrate (serial)
-
-                       udps:listen_ip:port (udp, server mode)
-
 Flags:
-  -h, --help                     Show context-sensitive help.
-      --version                  print version.
-  -q, --quiet                    suppress info messages.
-      --print                    print routed frames.
-      --print-errors             print parse errors singularly, instead of printing only their quantity every 5 seconds.
-      --read-timeout=10s         timeout of read operations.
-      --write-timeout=10s        timeout of write operations.
-      --idle-timeout=60s         disconnect idle connections after a timeout.
-      --hb-disable               disable heartbeats.
-      --hb-version=1             set mavlink version of heartbeats.
-      --hb-systemid=125          set system ID of heartbeats. it is recommended to set a different system id for each router in the network.
-      --hb-componentid=191       set component ID of heartbeats.
-      --hb-period=5              set period of heartbeats.
-      --streamreq-disable        do not request streams to Ardupilot devices, that need an explicit request
-                                 in order to emit telemetry streams. this task is usually delegated to the router,
-                                 in order to avoid conflicts when multiple ground stations are active.
-      --streamreq-frequency=4    set the stream frequency to request.
+  -h, --help                                         Show context-sensitive help.
+      --version                                      Print version.
+  -q, --quiet                                        Suppress info messages.
+      --print                                        Print routed frames.
+      --print-errors                                 Print parse errors singularly, instead of printing only their quantity every 5 seconds.
+      --read-timeout=10s                             Timeout of read operations.
+      --write-timeout=10s                            Timeout of write operations.
+      --idle-timeout=60s                             Disconnect idle connections after a timeout.
+      --hb-disable                                   Disable heartbeats.
+      --hb-version=1                                 Mavlink version of heartbeats.
+      --hb-systemid=125                              System ID of heartbeats. It is recommended to set a different system id for each router in the network.
+      --hb-componentid=191                           Component ID of heartbeats.
+      --hb-period=5                                  Period of heartbeats.
+      --streamreq-disable                            Do not request streams to Ardupilot devices, that need an explicit request in order to emit telemetry streams. This task
+                                                     is usually delegated to the router, in order to avoid conflicts when multiple ground stations are active.
+      --streamreq-frequency=4                        Stream frequency to request.
+      --dump                                         Dump telemetry to disk
+      --dump-path="dump/2006-01-02_15-04-05.tlog"    Path of dump segments, in Golang's time.Format() format
+      --dump-duration=1h                             Maximum duration of each dump segment
 ```
 
 ## Compile from source
