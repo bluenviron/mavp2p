@@ -18,6 +18,8 @@ import (
 	"github.com/bluenviron/gomavlib/v3/pkg/dialect"
 	"github.com/bluenviron/gomavlib/v3/pkg/dialects/common"
 	"github.com/bluenviron/gomavlib/v3/pkg/message"
+	"github.com/bluenviron/mavp2p/pkg/errorman"
+	"github.com/bluenviron/mavp2p/pkg/messageman"
 )
 
 var version = "v0.0.0"
@@ -158,12 +160,12 @@ var cli struct {
 }
 
 type program struct {
-	ctx            context.Context
-	ctxCancel      func()
-	wg             sync.WaitGroup
-	node           *gomavlib.Node
-	errorHandler   *errorHandler
-	messageHandler *messageHandler
+	ctx        context.Context
+	ctxCancel  func()
+	wg         sync.WaitGroup
+	node       *gomavlib.Node
+	errorMan   *errorman.Manager
+	messageMan *messageman.Manager
 }
 
 func newProgram(args []string) (*program, error) {
@@ -253,11 +255,12 @@ func newProgram(args []string) (*program, error) {
 		return nil, err
 	}
 
-	p.errorHandler, err = newErrorHandler(
-		ctx,
-		&p.wg,
-		cli.PrintErrors,
-	)
+	p.errorMan = &errorman.Manager{
+		Ctx:               ctx,
+		Wg:                &p.wg,
+		PrintSingleErrors: cli.PrintErrors,
+	}
+	err = p.errorMan.Initialize()
 	if err != nil {
 		ctxCancel()
 		p.wg.Wait()
@@ -265,12 +268,13 @@ func newProgram(args []string) (*program, error) {
 		return nil, err
 	}
 
-	p.messageHandler, err = newMessageHandler(
-		ctx,
-		&p.wg,
-		cli.StreamreqDisable,
-		p.node,
-	)
+	p.messageMan = &messageman.Manager{
+		Ctx:              ctx,
+		Wg:               &p.wg,
+		StreamReqDisable: cli.StreamreqDisable,
+		Node:             p.node,
+	}
+	err = p.messageMan.Initialize()
 	if err != nil {
 		ctxCancel()
 		p.wg.Wait()
@@ -321,7 +325,7 @@ func (p *program) run() {
 
 			case *gomavlib.EventChannelClose:
 				log.Printf("channel closed: %s", evt.Channel)
-				p.messageHandler.onEventChannelClose(evt)
+				p.messageMan.ProcessChannelClose(evt)
 
 			case *gomavlib.EventStreamRequested:
 				log.Printf("stream requested to chan=%s sid=%d cid=%d", evt.Channel,
@@ -331,10 +335,10 @@ func (p *program) run() {
 				if cli.Print {
 					log.Printf("%#v, %#v\n", evt.Frame, evt.Message())
 				}
-				p.messageHandler.onEventFrame(evt)
+				p.messageMan.ProcessFrame(evt)
 
 			case *gomavlib.EventParseError:
-				p.errorHandler.onEventError(evt)
+				p.errorMan.ProcessError(evt)
 			}
 
 		case <-p.ctx.Done():

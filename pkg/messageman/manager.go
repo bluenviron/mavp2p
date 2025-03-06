@@ -1,4 +1,5 @@
-package main
+// Package messageman contains the message manager.
+package messageman
 
 import (
 	"context"
@@ -41,38 +42,29 @@ func (i remoteNodeKey) String() string {
 	return fmt.Sprintf("chan=%s sid=%d cid=%d", i.channel, i.systemID, i.componentID)
 }
 
-type messageHandler struct {
-	ctx              context.Context
-	wg               *sync.WaitGroup
-	streamreqDisable bool
-	node             *gomavlib.Node
+// Manager is a message manager.
+type Manager struct {
+	Ctx              context.Context
+	Wg               *sync.WaitGroup
+	StreamReqDisable bool
+	Node             *gomavlib.Node
 
 	remoteNodeMutex sync.Mutex
 	remoteNodes     map[remoteNodeKey]time.Time
 }
 
-func newMessageHandler(
-	ctx context.Context,
-	wg *sync.WaitGroup,
-	streamreqDisable bool,
-	node *gomavlib.Node,
-) (*messageHandler, error) {
-	mh := &messageHandler{
-		ctx:              ctx,
-		wg:               wg,
-		streamreqDisable: streamreqDisable,
-		node:             node,
-		remoteNodes:      make(map[remoteNodeKey]time.Time),
-	}
+// Initialize initializes a Manager.
+func (m *Manager) Initialize() error {
+	m.remoteNodes = make(map[remoteNodeKey]time.Time)
 
-	wg.Add(1)
-	go mh.run()
+	m.Wg.Add(1)
+	go m.run()
 
-	return mh, nil
+	return nil
 }
 
-func (mh *messageHandler) run() {
-	defer mh.wg.Done()
+func (m *Manager) run() {
+	defer m.Wg.Done()
 
 	// delete remote nodes after a period of inactivity
 	for {
@@ -81,25 +73,25 @@ func (mh *messageHandler) run() {
 			func() {
 				now := time.Now()
 
-				mh.remoteNodeMutex.Lock()
-				defer mh.remoteNodeMutex.Unlock()
+				m.remoteNodeMutex.Lock()
+				defer m.remoteNodeMutex.Unlock()
 
-				for rnode, t := range mh.remoteNodes {
+				for rnode, t := range m.remoteNodes {
 					if now.Sub(t) >= nodeInactiveAfter {
 						log.Printf("node disappeared: %s", rnode)
-						delete(mh.remoteNodes, rnode)
+						delete(m.remoteNodes, rnode)
 					}
 				}
 			}()
 
-		case <-mh.ctx.Done():
+		case <-m.Ctx.Done():
 			return
 		}
 	}
 }
 
-func (mh *messageHandler) findNodeBySystemID(systemID byte) *remoteNodeKey {
-	for key := range mh.remoteNodes {
+func (m *Manager) findNodeBySystemID(systemID byte) *remoteNodeKey {
+	for key := range m.remoteNodes {
 		if key.systemID == systemID {
 			return &key
 		}
@@ -107,8 +99,8 @@ func (mh *messageHandler) findNodeBySystemID(systemID byte) *remoteNodeKey {
 	return nil
 }
 
-func (mh *messageHandler) findNodeBySystemAndComponentID(systemID byte, componentID byte) *remoteNodeKey {
-	for key := range mh.remoteNodes {
+func (m *Manager) findNodeBySystemAndComponentID(systemID byte, componentID byte) *remoteNodeKey {
+	for key := range m.remoteNodes {
 		if key.systemID == systemID && key.componentID == componentID {
 			return &key
 		}
@@ -116,7 +108,8 @@ func (mh *messageHandler) findNodeBySystemAndComponentID(systemID byte, componen
 	return nil
 }
 
-func (mh *messageHandler) onEventFrame(evt *gomavlib.EventFrame) {
+// ProcessFrame processes a EventFrame.
+func (m *Manager) ProcessFrame(evt *gomavlib.EventFrame) {
 	key := remoteNodeKey{
 		channel:     evt.Channel,
 		systemID:    evt.SystemID(),
@@ -124,18 +117,18 @@ func (mh *messageHandler) onEventFrame(evt *gomavlib.EventFrame) {
 	}
 
 	func() {
-		mh.remoteNodeMutex.Lock()
-		defer mh.remoteNodeMutex.Unlock()
+		m.remoteNodeMutex.Lock()
+		defer m.remoteNodeMutex.Unlock()
 
-		if _, ok := mh.remoteNodes[key]; !ok {
+		if _, ok := m.remoteNodes[key]; !ok {
 			log.Printf("node appeared: %s", key)
 		}
 
-		mh.remoteNodes[key] = time.Now()
+		m.remoteNodes[key] = time.Now()
 	}()
 
 	// stop stream request messages
-	if !mh.streamreqDisable {
+	if !m.StreamReqDisable {
 		if _, ok := evt.Message().(*common.MessageRequestDataStream); ok {
 			return
 		}
@@ -146,16 +139,16 @@ func (mh *messageHandler) onEventFrame(evt *gomavlib.EventFrame) {
 	if hasTarget && systemID > 0 {
 		var key *remoteNodeKey
 		if componentID == 0 {
-			key = mh.findNodeBySystemID(systemID)
+			key = m.findNodeBySystemID(systemID)
 		} else {
-			key = mh.findNodeBySystemAndComponentID(systemID, componentID)
+			key = m.findNodeBySystemAndComponentID(systemID, componentID)
 		}
 
 		if key != nil {
 			if key.channel == evt.Channel {
 				log.Printf("Warning: channel %s attempted to send message to itself, discarding", key.channel)
 			} else {
-				mh.node.WriteFrameTo(key.channel, evt.Frame) //nolint:errcheck
+				m.Node.WriteFrameTo(key.channel, evt.Frame) //nolint:errcheck
 				return
 			}
 		} else {
@@ -166,17 +159,18 @@ func (mh *messageHandler) onEventFrame(evt *gomavlib.EventFrame) {
 	}
 
 	// otherwise, route message to every channel
-	mh.node.WriteFrameExcept(evt.Channel, evt.Frame) //nolint:errcheck
+	m.Node.WriteFrameExcept(evt.Channel, evt.Frame) //nolint:errcheck
 }
 
-func (mh *messageHandler) onEventChannelClose(evt *gomavlib.EventChannelClose) {
-	mh.remoteNodeMutex.Lock()
-	defer mh.remoteNodeMutex.Unlock()
+// ProcessChannelClose processes a EventChannelClose.
+func (m *Manager) ProcessChannelClose(evt *gomavlib.EventChannelClose) {
+	m.remoteNodeMutex.Lock()
+	defer m.remoteNodeMutex.Unlock()
 
 	// delete remote nodes associated to channel
-	for key := range mh.remoteNodes {
+	for key := range m.remoteNodes {
 		if key.channel == evt.Channel {
-			delete(mh.remoteNodes, key)
+			delete(m.remoteNodes, key)
 			log.Printf("node disappeared: %s", key)
 		}
 	}
