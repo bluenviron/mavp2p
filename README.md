@@ -97,7 +97,7 @@ Create a server that links together all UDP endpoints that connect to it:
 Dump telemetry to disk:
 
 ```
-./mavp2p udps:0.0.0.0:5600 --dump --dump-folder=dump/
+./mavp2p udps:0.0.0.0:5600 --dump --dump-path="dump/2006-01-02_15-04-05.tlog"
 ```
 
 ## Connecting popular software
