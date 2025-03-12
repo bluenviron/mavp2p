@@ -6,8 +6,8 @@ github.com/alecthomas/kong v1.9.0 h1:Wgg0ll5Ys7xDnpgYBuBn/wPeLGAuK0NvYmEcisJgrIs
 github.com/alecthomas/kong v1.9.0/go.mod h1:p2vqieVMeTAnaC83txKtXe8FLke2X07aruPWXyMPQrU=
 github.com/alecthomas/repr v0.4.0 h1:GhI2A8MACjfegCPVq9f1FLvIBS+DrQ2KQBFZP1iFzXc=
 github.com/alecthomas/repr v0.4.0/go.mod h1:Fr0507jx4eOXV7AlPV6AVZLYrLIuIeSOWtW57eE/O/4=
-github.com/bluenviron/gomavlib/v3 v3.1.1-0.20250305051948-a942c77df15c h1:3puWBb5kYwejer024IMeYzaXNvdlPg+qOCGxQscl7mE=
-github.com/bluenviron/gomavlib/v3 v3.1.1-0.20250305051948-a942c77df15c/go.mod h1:NX8aEdcPL/kUsb335plBu5d22Hiw6E7UTfuRipnZ9qs=
+github.com/bluenviron/gomavlib/v3 v3.2.0 h1:BRF5yDU2ok8zCmgLV7GuF/+Su0ANQcpqXMyuEWabG+4=
+github.com/bluenviron/gomavlib/v3 v3.2.0/go.mod h1:rjhY8gU5jvTHl40RcUe0ZBD78aIzj+qQ/gZI7IQo3aQ=
 github.com/creack/goselect v0.1.2 h1:2DNy14+JPjRBgPzAd1thbQp4BSIihxcBf0IXhQXDRa0=
 github.com/creack/goselect v0.1.2/go.mod h1:a/NhLweNvqIYMuxcMOuWY516Cimucms3DglDzQP3hKY=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
