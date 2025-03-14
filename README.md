@@ -219,7 +219,7 @@ Flags:
 
 ### Standard
 
-Install git and Go &ge; 1.21. Clone the repository, enter into the folder and start the building process:
+Install git and Go &ge; 1.23. Clone the repository, enter into the folder and start the building process:
 
 ```sh
 git clone https://github.com/bluenviron/mavp2p
@@ -254,7 +254,7 @@ If the OpenWrt device doesn't have enough resources to compile, you can [cross c
 
 Cross compilation allows to build an executable for a target machine from another machine with different operating system or architecture. This is useful in case the target machine doesn't have enough resources for compilation or if you don't want to install the compilation dependencies on it.
 
-On the machine you want to use to compile, install git and Go &ge; 1.21. Clone the repository, enter into the folder and start the building process:
+On the machine you want to use to compile, install git and Go &ge; 1.23. Clone the repository, enter into the folder and start the building process:
 
 ```sh
 git clone https://github.com/bluenviron/mavp2p
