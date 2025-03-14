@@ -2,8 +2,6 @@ module github.com/bluenviron/mavp2p
 
 go 1.23.0
 
-toolchain go1.24.1
-
 require (
 	github.com/alecthomas/kong v1.9.0
 	github.com/bluenviron/gomavlib/v3 v3.2.1-0.20250314162600-2f374d98ed11
