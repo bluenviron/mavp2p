@@ -351,7 +351,7 @@ func (p *program) run() {
 				log.Printf("channel opened: %s", evt.Channel)
 
 			case *gomavlib.EventChannelClose:
-				log.Printf("channel closed: %s", evt.Channel)
+				log.Printf("channel closed: %s, %s", evt.Channel, evt.Error)
 				p.messageMan.ProcessChannelClose(evt)
 
 			case *gomavlib.EventStreamRequested:
