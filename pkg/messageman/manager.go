@@ -48,6 +48,7 @@ type Manager struct {
 	Wg               *sync.WaitGroup
 	StreamReqDisable bool
 	Node             *gomavlib.Node
+	SnifferSysid     int
 
 	remoteNodeMutex sync.Mutex
 	remoteNodes     map[remoteNodeKey]time.Time
@@ -59,6 +60,11 @@ func (m *Manager) Initialize() error {
 
 	m.Wg.Add(1)
 	go m.run()
+
+	// print log for sniff mode
+	if m.SnifferSysid != 0 {
+		log.Printf("sniff mode enabled. route all packet to system id %d", m.SnifferSysid)
+	}
 
 	return nil
 }
@@ -149,12 +155,27 @@ func (m *Manager) ProcessFrame(evt *gomavlib.EventFrame) {
 				log.Printf("Warning: channel %s attempted to send message to itself, discarding", key.channel)
 			} else {
 				m.Node.WriteFrameTo(key.channel, evt.Frame) //nolint:errcheck
-				return
 			}
 		} else {
 			log.Printf(
 				"Warning: received message addressed to unexistent node with systemID=%d and componentID=%d",
 				systemID, componentID)
+		}
+
+		// if sniff mode enabled, route packet to sniff system
+		if m.SnifferSysid != 0 {
+			var key_sniff *remoteNodeKey
+			key_sniff = m.findNodeBySystemID(byte(m.SnifferSysid))
+
+			if key_sniff != nil {
+				if key_sniff.channel == evt.Channel {
+					log.Printf("Warning: channel %s attempted to send message to itself, discarding", key_sniff.channel)
+				} else {
+					m.Node.WriteFrameTo(key_sniff.channel, evt.Frame) //nolint:errcheck
+				}
+			} else {
+				log.Printf("Warning: Sniff System %d is unexistent node.", m.SnifferSysid)
+			}
 		}
 	}
 

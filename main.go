@@ -155,6 +155,7 @@ var cli struct {
 	HbSystemid         int           `default:"125"`
 	HbComponentid      int           `help:"Component ID of heartbeats." default:"191"`
 	HbPeriod           int           `help:"Period of heartbeats." default:"5"`
+	SnifferSysid       int           `help:"Forward all packets to this System ID(0 is disable sniffer mode)." default:"0"`
 	StreamreqDisable   bool
 	StreamreqFrequency int           `help:"Stream frequency to request." default:"4"`
 	Dump               bool          `help:"Dump telemetry to disk"`
@@ -283,6 +284,7 @@ func newProgram(args []string) (*program, error) {
 		Wg:               &p.wg,
 		StreamReqDisable: cli.StreamreqDisable,
 		Node:             p.node,
+		SnifferSysid:     cli.SnifferSysid,
 	}
 	err = p.messageMan.Initialize()
 	if err != nil {
