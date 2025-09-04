@@ -207,6 +207,7 @@ Flags:
       --hb-systemid=125                              System ID of heartbeats. It is recommended to set a different system id for each router in the network.
       --hb-componentid=191                           Component ID of heartbeats.
       --hb-period=5                                  Period of heartbeats.
+      --sniffer-sysid=0                              Forward all packets to this System ID(0 is disable sniffer mode)
       --streamreq-disable                            Do not request streams to Ardupilot devices, that need an explicit request in order to emit telemetry streams. This task
                                                      is usually delegated to the router, in order to avoid conflicts when multiple ground stations are active.
       --streamreq-frequency=4                        Stream frequency to request.
