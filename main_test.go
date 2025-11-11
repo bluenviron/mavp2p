@@ -144,7 +144,7 @@ func TestTarget(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	for i := 0; i < 2; i++ {
+	for range 2 {
 		evt := <-pub.Events()
 		eventFr, ok := evt.(*gomavlib.EventFrame)
 		require.Equal(t, true, ok)
