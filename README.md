@@ -1,8 +1,8 @@
 
 # mavp2p
 
-[![Test](https://github.com/bluenviron/mavp2p/actions/workflows/test.yml/badge.svg)](https://github.com/bluenviron/mavp2p/actions/workflows/test.yml)
-[![Lint](https://github.com/bluenviron/mavp2p/actions/workflows/lint.yml/badge.svg)](https://github.com/bluenviron/mavp2p/actions/workflows/lint.yml)
+[![Test](https://github.com/bluenviron/mavp2p/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/bluenviron/mavp2p/actions/workflows/test.yml?query=branch%3Amain)
+[![Lint](https://github.com/bluenviron/mavp2p/actions/workflows/lint.yml/badge.svg?branch=main)](https://github.com/bluenviron/mavp2p/actions/workflows/lint.yml?query=branch%3Amain)
 [![CodeCov](https://codecov.io/gh/bluenviron/mavp2p/branch/main/graph/badge.svg)](https://app.codecov.io/gh/bluenviron/mavp2p/tree/main)
 [![Release](https://img.shields.io/github/v/release/bluenviron/mavp2p)](https://github.com/bluenviron/mavp2p/releases)
 [![Docker Hub](https://img.shields.io/badge/docker-bluenviron/mavp2p-blue)](https://hub.docker.com/r/bluenviron/mavp2p)
