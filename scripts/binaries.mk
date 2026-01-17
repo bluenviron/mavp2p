@@ -32,12 +32,17 @@ FROM build-base AS build-linux-arm64
 RUN GOOS=linux GOARCH=arm64 go build -ldflags "-X main.version=$$VERSION" -o tmp/$(BINARY_NAME)
 RUN tar -C tmp -czf binaries/$(BINARY_NAME)_$${VERSION}_linux_arm64v8.tar.gz --owner=0 --group=0 $(BINARY_NAME)
 
+FROM build-base AS build-linux-riscv64
+RUN GOOS=linux GOARCH=riscv64 go build -ldflags "-X main.version=$$VERSION" -o tmp/$(BINARY_NAME)
+RUN tar -C tmp -czf binaries/$(BINARY_NAME)_$${VERSION}_linux_riscv64.tar.gz --owner=0 --group=0 $(BINARY_NAME)
+
 FROM $(BASE_IMAGE)
 COPY --from=build-windows-amd64 /s/binaries /s/binaries
 COPY --from=build-linux-amd64 /s/binaries /s/binaries
 COPY --from=build-linux-armv6 /s/binaries /s/binaries
 COPY --from=build-linux-armv7 /s/binaries /s/binaries
 COPY --from=build-linux-arm64 /s/binaries /s/binaries
+COPY --from=build-linux-riscv64 /s/binaries /s/binaries
 endef
 export DOCKERFILE_BINARIES
 
