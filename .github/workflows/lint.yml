@@ -33,5 +33,4 @@ jobs:
 
     - run: |
         go mod download
-        go mod tidy
-        git diff --exit-code
+        go mod tidy -diff
