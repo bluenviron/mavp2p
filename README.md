@@ -1,3 +1,20 @@
+> **Freefly fork.** This is the [`freefly-systems/mavp2p-library`](https://github.com/freefly-systems/mavp2p-library) fork of [`bluenviron/mavp2p`](https://github.com/bluenviron/mavp2p), used as a Go library inside the Pilot Pro MAVP2P stack. The fork adds a `bridge/` package that exports cgo symbols so the router can be linked into a Flutter app.
+>
+> ```
+> pilot_pro_mavp2p_app                  Flutter Android app
+>   └─ plugins/mavp2p_dart_ffi_plugin   Dart FFI plugin + cgo bridge
+>         └─ src/mavp2p-library         (this repo, Go MAVLink router)
+> ```
+>
+> Building this library directly: `go build ./...` and `go test ./...`. Cross-compilation for Android (arm64) is handled by the consuming plugin's [`build_mavp2p_library.sh`](https://github.com/freefly-systems/mavp2p_dart_ffi_plugin/blob/main/src/build_mavp2p_library.sh), which produces `lib_mavp2p_dart_ffi.so` via cgo + the Android NDK.
+>
+> Sibling repos:
+> - [`pilot_pro_mavp2p_app`](https://github.com/freefly-systems/pilot_pro_mavp2p_app) — Flutter app (umbrella)
+> - [`mavp2p_dart_ffi_plugin`](https://github.com/freefly-systems/mavp2p_dart_ffi_plugin) — Dart FFI plugin
+>
+> The original mavp2p documentation follows.
+
+---
 
 # mavp2p
 
