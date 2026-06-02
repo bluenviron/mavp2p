@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bluenviron/gomavlib/v3"
+	"github.com/bluenviron/gomavlib/v4"
 	"github.com/stretchr/testify/require"
 )
 

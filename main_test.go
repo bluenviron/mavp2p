@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bluenviron/gomavlib/v3"
-	"github.com/bluenviron/gomavlib/v3/pkg/dialects/common"
+	"github.com/bluenviron/gomavlib/v4"
+	"github.com/bluenviron/gomavlib/v4/pkg/dialects/common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,8 +15,8 @@ func TestBroadcast(t *testing.T) {
 	defer p.close()
 
 	pub := &gomavlib.Node{
-		Endpoints: []gomavlib.EndpointConf{
-			gomavlib.EndpointTCPClient{
+		Endpoints: []gomavlib.Endpoint{
+			&gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:6666",
 			},
 		},
@@ -31,8 +31,8 @@ func TestBroadcast(t *testing.T) {
 	defer pub.Close()
 
 	sub := &gomavlib.Node{
-		Endpoints: []gomavlib.EndpointConf{
-			gomavlib.EndpointTCPClient{
+		Endpoints: []gomavlib.Endpoint{
+			&gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:6666",
 			},
 		},
@@ -79,8 +79,8 @@ func TestTarget(t *testing.T) {
 	defer p.close()
 
 	pub := &gomavlib.Node{
-		Endpoints: []gomavlib.EndpointConf{
-			gomavlib.EndpointTCPClient{
+		Endpoints: []gomavlib.Endpoint{
+			&gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:6666",
 			},
 		},
@@ -95,8 +95,8 @@ func TestTarget(t *testing.T) {
 	defer pub.Close()
 
 	sub1 := &gomavlib.Node{
-		Endpoints: []gomavlib.EndpointConf{
-			gomavlib.EndpointTCPClient{
+		Endpoints: []gomavlib.Endpoint{
+			&gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:6666",
 			},
 		},
@@ -111,8 +111,8 @@ func TestTarget(t *testing.T) {
 	defer sub1.Close()
 
 	sub2 := &gomavlib.Node{
-		Endpoints: []gomavlib.EndpointConf{
-			gomavlib.EndpointTCPClient{
+		Endpoints: []gomavlib.Endpoint{
+			&gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:6666",
 			},
 		},
@@ -184,8 +184,8 @@ func TestTargetNotFound(t *testing.T) {
 	defer p.close()
 
 	pub := &gomavlib.Node{
-		Endpoints: []gomavlib.EndpointConf{
-			gomavlib.EndpointTCPClient{
+		Endpoints: []gomavlib.Endpoint{
+			&gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:6666",
 			},
 		},
@@ -200,8 +200,8 @@ func TestTargetNotFound(t *testing.T) {
 	defer pub.Close()
 
 	sub := &gomavlib.Node{
-		Endpoints: []gomavlib.EndpointConf{
-			gomavlib.EndpointTCPClient{
+		Endpoints: []gomavlib.Endpoint{
+			&gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:6666",
 			},
 		},

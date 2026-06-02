@@ -5,17 +5,17 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/bluenviron/gomavlib/v3"
-	"github.com/bluenviron/gomavlib/v3/pkg/dialects/ardupilotmega"
-	"github.com/bluenviron/gomavlib/v3/pkg/frame"
-	"github.com/bluenviron/gomavlib/v3/pkg/message"
+	"github.com/bluenviron/gomavlib/v4"
+	"github.com/bluenviron/gomavlib/v4/pkg/dialects/ardupilotmega"
+	"github.com/bluenviron/gomavlib/v4/pkg/frame"
+	"github.com/bluenviron/gomavlib/v4/pkg/message"
 	"github.com/stretchr/testify/require"
 )
 
 func TestRouteSingle(t *testing.T) {
 	node := &gomavlib.Node{
-		Endpoints: []gomavlib.EndpointConf{
-			gomavlib.EndpointTCPServer{
+		Endpoints: []gomavlib.Endpoint{
+			&gomavlib.EndpointTCPServer{
 				Address: "127.0.0.1:3345",
 			},
 		},
@@ -41,8 +41,8 @@ func TestRouteSingle(t *testing.T) {
 	require.NoError(t, err)
 
 	client := &gomavlib.Node{
-		Endpoints: []gomavlib.EndpointConf{
-			gomavlib.EndpointTCPClient{
+		Endpoints: []gomavlib.Endpoint{
+			&gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:3345",
 			},
 		},
@@ -104,8 +104,8 @@ func TestRouteSingle(t *testing.T) {
 
 func TestRouteAll(t *testing.T) {
 	node := &gomavlib.Node{
-		Endpoints: []gomavlib.EndpointConf{
-			gomavlib.EndpointTCPServer{
+		Endpoints: []gomavlib.Endpoint{
+			&gomavlib.EndpointTCPServer{
 				Address: "127.0.0.1:3345",
 			},
 		},
@@ -131,8 +131,8 @@ func TestRouteAll(t *testing.T) {
 	require.NoError(t, err)
 
 	client := &gomavlib.Node{
-		Endpoints: []gomavlib.EndpointConf{
-			gomavlib.EndpointTCPClient{
+		Endpoints: []gomavlib.Endpoint{
+			&gomavlib.EndpointTCPClient{
 				Address: "127.0.0.1:3345",
 			},
 		},

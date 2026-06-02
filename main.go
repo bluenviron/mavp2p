@@ -14,10 +14,10 @@ import (
 	"time"
 
 	"github.com/alecthomas/kong"
-	"github.com/bluenviron/gomavlib/v3"
-	"github.com/bluenviron/gomavlib/v3/pkg/dialect"
-	"github.com/bluenviron/gomavlib/v3/pkg/dialects/common"
-	"github.com/bluenviron/gomavlib/v3/pkg/message"
+	"github.com/bluenviron/gomavlib/v4"
+	"github.com/bluenviron/gomavlib/v4/pkg/dialect"
+	"github.com/bluenviron/gomavlib/v4/pkg/dialects/common"
+	"github.com/bluenviron/gomavlib/v4/pkg/message"
 	"github.com/bluenviron/mavp2p/pkg/dumper"
 	"github.com/bluenviron/mavp2p/pkg/errorman"
 	"github.com/bluenviron/mavp2p/pkg/messageman"
@@ -54,14 +54,14 @@ func generateDialect(hbDisable bool, streamreqDisable bool) *dialect.Dialect {
 type endpointType struct {
 	args string
 	desc string
-	make func(args string) (gomavlib.EndpointConf, error)
+	make func(args string) (gomavlib.Endpoint, error)
 }
 
 var endpointTypes = map[string]endpointType{
 	"serial": {
 		"port:baudrate",
 		"serial",
-		func(args string) (gomavlib.EndpointConf, error) {
+		func(args string) (gomavlib.Endpoint, error) {
 			matches := reSerial.FindStringSubmatch(args)
 			if matches == nil {
 				return nil, fmt.Errorf("invalid address")
@@ -70,7 +70,7 @@ var endpointTypes = map[string]endpointType{
 			dev := matches[1]
 			baud, _ := strconv.Atoi(matches[2])
 
-			return gomavlib.EndpointSerial{
+			return &gomavlib.EndpointSerial{
 				Device: dev,
 				Baud:   baud,
 			}, nil
@@ -79,46 +79,46 @@ var endpointTypes = map[string]endpointType{
 	"udps": {
 		"listen_ip:port",
 		"udp, server mode",
-		func(args string) (gomavlib.EndpointConf, error) {
-			return gomavlib.EndpointUDPServer{Address: args}, nil
+		func(args string) (gomavlib.Endpoint, error) {
+			return &gomavlib.EndpointUDPServer{Address: args}, nil
 		},
 	},
 	"udpc": {
 		"dest_ip:port",
 		"udp, client mode",
-		func(args string) (gomavlib.EndpointConf, error) {
-			return gomavlib.EndpointUDPClient{Address: args}, nil
+		func(args string) (gomavlib.Endpoint, error) {
+			return &gomavlib.EndpointUDPClient{Address: args}, nil
 		},
 	},
 	"udpb": {
 		"broadcast_ip:port",
 		"udp, broadcast mode",
-		func(args string) (gomavlib.EndpointConf, error) {
-			return gomavlib.EndpointUDPBroadcast{BroadcastAddress: args}, nil
+		func(args string) (gomavlib.Endpoint, error) {
+			return &gomavlib.EndpointUDPBroadcast{BroadcastAddress: args}, nil
 		},
 	},
 	"tcps": {
 		"listen_ip:port",
 		"tcp, server mode",
-		func(args string) (gomavlib.EndpointConf, error) {
-			return gomavlib.EndpointTCPServer{Address: args}, nil
+		func(args string) (gomavlib.Endpoint, error) {
+			return &gomavlib.EndpointTCPServer{Address: args}, nil
 		},
 	},
 	"tcpc": {
 		"dest_ip:port",
 		"tcp, client mode",
-		func(args string) (gomavlib.EndpointConf, error) {
-			return gomavlib.EndpointTCPClient{Address: args}, nil
+		func(args string) (gomavlib.Endpoint, error) {
+			return &gomavlib.EndpointTCPClient{Address: args}, nil
 		},
 	},
 }
 
-func generateEndpointConfs(endpoints []string) ([]gomavlib.EndpointConf, error) {
+func generateEndpointConfs(endpoints []string) ([]gomavlib.Endpoint, error) {
 	if len(endpoints) < 1 {
 		return nil, fmt.Errorf("at least one endpoint is required")
 	}
 
-	econfs := make([]gomavlib.EndpointConf, len(endpoints))
+	econfs := make([]gomavlib.Endpoint, len(endpoints))
 
 	for i, e := range endpoints {
 		matches := reArgs.FindStringSubmatch(e)
