@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bluenviron/gomavlib/v3"
-	"github.com/bluenviron/gomavlib/v3/pkg/dialects/ardupilotmega"
-	"github.com/bluenviron/gomavlib/v3/pkg/frame"
+	"github.com/bluenviron/gomavlib/v4"
+	"github.com/bluenviron/gomavlib/v4/pkg/dialects/ardupilotmega"
+	"github.com/bluenviron/gomavlib/v4/pkg/frame"
 	"github.com/stretchr/testify/require"
 )
 

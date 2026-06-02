@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bluenviron/gomavlib/v3"
+	"github.com/bluenviron/gomavlib/v4"
 )
 
 var printInterval = 5 * time.Second
