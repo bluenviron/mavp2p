@@ -1,4 +1,4 @@
-package messageman
+package messageman_test
 
 import (
 	"context"
@@ -10,6 +10,8 @@ import (
 	"github.com/bluenviron/gomavlib/v4/pkg/frame"
 	"github.com/bluenviron/gomavlib/v4/pkg/message"
 	"github.com/stretchr/testify/require"
+
+	"github.com/bluenviron/mavp2p/pkg/messageman"
 )
 
 func TestRouteSingle(t *testing.T) {
@@ -31,7 +33,7 @@ func TestRouteSingle(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 
-	m := &Manager{
+	m := &messageman.Manager{
 		Ctx:              ctx,
 		Wg:               &wg,
 		StreamReqDisable: true,
@@ -121,7 +123,7 @@ func TestRouteAll(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 
-	m := &Manager{
+	m := &messageman.Manager{
 		Ctx:              ctx,
 		Wg:               &wg,
 		StreamReqDisable: true,
