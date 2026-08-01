@@ -1,4 +1,4 @@
-package dumper
+package dumper_test
 
 import (
 	"context"
@@ -12,6 +12,8 @@ import (
 	"github.com/bluenviron/gomavlib/v4/pkg/dialects/ardupilotmega"
 	"github.com/bluenviron/gomavlib/v4/pkg/frame"
 	"github.com/stretchr/testify/require"
+
+	"github.com/bluenviron/mavp2p/pkg/dumper"
 )
 
 func TestDumper(t *testing.T) {
@@ -22,19 +24,15 @@ func TestDumper(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 
-	d := &Dumper{
+	d := &dumper.Dumper{
 		Ctx:          ctx,
 		Wg:           &wg,
 		Dialect:      ardupilotmega.Dialect,
-		DumpPath:     filepath.Join(tmpFolder, "2006-01-02_15-04-05.tlog"),
+		DumpPath:     filepath.Join(tmpFolder, "2006-01-02_15-04-05.000000000.tlog"),
 		DumpDuration: 1 * time.Second,
 	}
 	err = d.Initialize()
 	require.NoError(t, err)
-
-	timeNow = func() time.Time {
-		return time.Date(2009, 5, 20, 22, 15, 25, 427000, time.Local)
-	}
 
 	d.ProcessFrame(&gomavlib.EventFrame{
 		Frame: &frame.V2Frame{
@@ -46,9 +44,7 @@ func TestDumper(t *testing.T) {
 		},
 	})
 
-	timeNow = func() time.Time {
-		return time.Date(2009, 5, 20, 22, 16, 25, 427000, time.Local)
-	}
+	time.Sleep(1100 * time.Millisecond)
 
 	d.ProcessFrame(&gomavlib.EventFrame{
 		Frame: &frame.V2Frame{
@@ -65,9 +61,10 @@ func TestDumper(t *testing.T) {
 	cancel()
 	wg.Wait()
 
-	_, err = os.Stat(filepath.Join(tmpFolder, "2009-05-20_22-15-25.tlog"))
+	entries, err := os.ReadDir(tmpFolder)
 	require.NoError(t, err)
-
-	_, err = os.Stat(filepath.Join(tmpFolder, "2009-05-20_22-16-25.tlog"))
-	require.NoError(t, err)
+	require.Len(t, entries, 2)
+	for _, entry := range entries {
+		require.Equal(t, ".tlog", filepath.Ext(entry.Name()))
+	}
 }
