@@ -18,6 +18,7 @@ import (
 	"github.com/bluenviron/gomavlib/v4/pkg/dialect"
 	"github.com/bluenviron/gomavlib/v4/pkg/dialects/common"
 	"github.com/bluenviron/gomavlib/v4/pkg/message"
+
 	"github.com/bluenviron/mavp2p/pkg/dumper"
 	"github.com/bluenviron/mavp2p/pkg/errorman"
 	"github.com/bluenviron/mavp2p/pkg/messageman"
