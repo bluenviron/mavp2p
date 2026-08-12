@@ -90,22 +90,44 @@ func (m *Manager) run() {
 	}
 }
 
-func (m *Manager) findNodeBySystemID(systemID byte) *remoteNodeKey {
-	for key := range m.remoteNodes {
-		if key.systemID == systemID {
-			return &key
+// appendChannel adds ch unless already present.
+func appendChannel(channels []*gomavlib.Channel, ch *gomavlib.Channel) []*gomavlib.Channel {
+	for _, existing := range channels {
+		if existing == ch {
+			return channels
 		}
 	}
-	return nil
+	return append(channels, ch)
 }
 
-func (m *Manager) findNodeBySystemAndComponentID(systemID byte, componentID byte) *remoteNodeKey {
+// findChannelsBySystemID returns all channels of a given system.
+func (m *Manager) findChannelsBySystemID(systemID byte) []*gomavlib.Channel {
+	// lock: the cleanup routine deletes from remoteNodes concurrently
+	m.remoteNodeMutex.Lock()
+	defer m.remoteNodeMutex.Unlock()
+
+	var channels []*gomavlib.Channel
 	for key := range m.remoteNodes {
-		if key.systemID == systemID && key.componentID == componentID {
-			return &key
+		if key.systemID == systemID {
+			channels = appendChannel(channels, key.channel)
 		}
 	}
-	return nil
+	return channels
+}
+
+// findChannelsBySystemAndComponentID returns all channels of a given system and component.
+func (m *Manager) findChannelsBySystemAndComponentID(systemID byte, componentID byte) []*gomavlib.Channel {
+	// lock: the cleanup routine deletes from remoteNodes concurrently
+	m.remoteNodeMutex.Lock()
+	defer m.remoteNodeMutex.Unlock()
+
+	var channels []*gomavlib.Channel
+	for key := range m.remoteNodes {
+		if key.systemID == systemID && key.componentID == componentID {
+			channels = appendChannel(channels, key.channel)
+		}
+	}
+	return channels
 }
 
 // ProcessFrame processes a EventFrame.
@@ -137,20 +159,27 @@ func (m *Manager) ProcessFrame(evt *gomavlib.EventFrame) {
 	// if message has a target, route only to it
 	systemID, componentID, hasTarget := getTarget(evt.Message())
 	if hasTarget && systemID > 0 {
-		var key *remoteNodeKey
+		var channels []*gomavlib.Channel
 		if componentID == 0 {
-			key = m.findNodeBySystemID(systemID)
+			channels = m.findChannelsBySystemID(systemID)
 		} else {
-			key = m.findNodeBySystemAndComponentID(systemID, componentID)
+			channels = m.findChannelsBySystemAndComponentID(systemID, componentID)
 		}
 
-		if key != nil {
-			if key.channel == evt.Channel {
-				log.Printf("Warning: channel %s attempted to send message to itself, discarding", key.channel)
-			} else {
-				m.Node.WriteFrameTo(key.channel, evt.Frame) //nolint:errcheck
+		if len(channels) != 0 {
+			// a target can be present on multiple channels; route to all of them
+			delivered := false
+			for _, channel := range channels {
+				if channel == evt.Channel {
+					continue
+				}
+				m.Node.WriteFrameTo(channel, evt.Frame) //nolint:errcheck
+				delivered = true
+			}
+			if delivered {
 				return
 			}
+			log.Printf("Warning: channel %s attempted to send message to itself, discarding", evt.Channel)
 		} else {
 			log.Printf(
 				"Warning: received message addressed to unexistent node with systemID=%d and componentID=%d",
