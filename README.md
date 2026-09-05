@@ -1,4 +1,3 @@
-
 # mavp2p
 
 [![Test](https://github.com/bluenviron/mavp2p/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/bluenviron/mavp2p/actions/workflows/test.yml?query=branch%3Amain)
@@ -13,38 +12,38 @@ This project makes use of the [**gomavlib**](https://github.com/bluenviron/gomav
 
 Features:
 
-* Link together an arbitrary number of different kinds of endpoints:
-  * Serial
-  * UDP (client, server or broadcast mode)
-  * TCP (client or server mode)
-* Support Mavlink 2.0 and 1.0, support any dialect
-* Emit heartbeats
-* Automatically request streams to Ardupilot devices and block stream requests from ground stations
-* Route messages by target system ID / component ID
-* Use domain names in place of IPs
-* Reconnect to TCP/UDP servers when disconnected, remove inactive TCP/UDP clients
-* Dump telemetry to disk
-* Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, arm64, amd64), independent from libc and compatible with lightweight distros (Alpine Linux)
+- Link together an arbitrary number of different kinds of endpoints:
+  - Serial
+  - UDP (client, server or broadcast mode)
+  - TCP (client or server mode)
+- Support Mavlink 2.0 and 1.0, support any dialect
+- Emit heartbeats
+- Automatically request streams to Ardupilot devices and block stream requests from ground stations
+- Route messages by target system ID / component ID
+- Use domain names in place of IPs
+- Reconnect to TCP/UDP servers when disconnected, remove inactive TCP/UDP clients
+- Dump telemetry to disk
+- Multiplatform, available for multiple operating systems (Linux, Windows) and architectures (arm6, arm7, arm64, amd64), independent from libc and compatible with lightweight distros (Alpine Linux)
 
 ## Table of contents
 
-* [Installation](#installation)
-  * [Standalone binary](#standalone-binary)
-  * [Docker image](#docker-image)
-  * [OpenWrt binary](#openwrt-binary)
-* [Usage](#usage)
-* [Connecting popular software](#connecting-popular-software)
-  * [QGroundControl](#qgroundcontrol)
-  * [Mission Planner](#mission-planner)
-  * [PX4 Simulator](#px4-simulator)
-* [Comparison with similar software](#comparison-with-similar-software)
-* [Full command-line usage](#full-command-line-usage)
-* [Compile from source](#compile-from-source)
-  * [Standard](#standard)
-  * [OpenWrt](#openwrt)
-  * [Cross compile](#cross-compile)
-* [Specifications](#specifications)
-* [Links](#links)
+- [Installation](#installation)
+  - [Standalone binary](#standalone-binary)
+  - [Docker image](#docker-image)
+  - [OpenWrt binary](#openwrt-binary)
+- [Usage](#usage)
+- [Connecting popular software](#connecting-popular-software)
+  - [QGroundControl](#qgroundcontrol)
+  - [Mission Planner](#mission-planner)
+  - [PX4 Simulator](#px4-simulator)
+- [Comparison with similar software](#comparison-with-similar-software)
+- [Full command-line usage](#full-command-line-usage)
+- [Compile from source](#compile-from-source)
+  - [Standard](#standard)
+  - [OpenWrt](#openwrt)
+  - [Cross compile](#cross-compile)
+- [Specifications](#specifications)
+- [Links](#links)
 
 ## Installation
 
@@ -113,10 +112,10 @@ Dump telemetry to disk:
 2. Install and open QGroundControl.
 
 3. Open _Application Settings_, click on _Comm Links_, _Add_. Fill the form with:
-   * Name: some name
-   * Type: UDP
-   * Port: 0
-   * Server Addresses: mavp2p-ip:5600 (then click _Add Server_)
+   - Name: some name
+   - Type: UDP
+   - Port: 0
+   - Server Addresses: mavp2p-ip:5600 (then click _Add Server_)
 
 4. Click _Ok_. Click _Connect_.
 
@@ -158,18 +157,18 @@ Dump telemetry to disk:
 
 _mavp2p_ vs _mavproxy_
 
-* Does not require python nor any interpreter
-* Much lower CPU and memory usage
-* Supports an arbitrary number of inputs and outputs
-* Logs can be disabled, resulting in no disk I/O
-* UDP clients are removed when inactive
+- Does not require python nor any interpreter
+- Much lower CPU and memory usage
+- Supports an arbitrary number of inputs and outputs
+- Logs can be disabled, resulting in no disk I/O
+- UDP clients are removed when inactive
 
 _mavp2p_ vs _mavlink-router_
 
-* Supports domain names
-* Supports multiple TCP servers
-* UDP clients are removed when inactive
-* Supports automatic stream requests to Ardupilot devices
+- Supports domain names
+- Supports multiple TCP servers
+- UDP clients are removed when inactive
+- Supports automatic stream requests to Ardupilot devices
 
 ## Full command-line usage
 
@@ -290,15 +289,15 @@ The command will produce the `mavp2p` binary.
 
 ## Specifications
 
-* [Mavlink specifications](https://github.com/bluenviron/gomavlib#specifications)
+- [Mavlink specifications](https://github.com/bluenviron/gomavlib#specifications)
 
 ## Links
 
 Related projects
 
-* [gomavlib](https://github.com/bluenviron/gomavlib)
+- [gomavlib](https://github.com/bluenviron/gomavlib)
 
 Similar software
 
-* [MavProxy](https://github.com/ArduPilot/MAVProxy)
-* [mavlink-router](https://github.com/intel/mavlink-router)
+- [MavProxy](https://github.com/ArduPilot/MAVProxy)
+- [mavlink-router](https://github.com/intel/mavlink-router)

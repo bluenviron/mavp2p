@@ -3,7 +3,7 @@ name: release
 on:
   push:
     tags:
-    - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -13,67 +13,67 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
 
-    - run: make binaries
+      - run: make binaries
 
-    - uses: actions/upload-artifact@v7
-      with:
-        name: binaries
-        path: binaries
+      - uses: actions/upload-artifact@v7
+        with:
+          name: binaries
+          path: binaries
 
   github:
     needs: binaries
     runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
 
-    - uses: actions/download-artifact@v8
-      with:
-        name: binaries
-        path: binaries
+      - uses: actions/download-artifact@v8
+        with:
+          name: binaries
+          path: binaries
 
-    - uses: actions/github-script@v9
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const fs = require('fs').promises;
-          const { repo: { owner, repo } } = context;
+      - uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs').promises;
+            const { repo: { owner, repo } } = context;
 
-          const currentRelease = context.ref.split('/')[2];
+            const currentRelease = context.ref.split('/')[2];
 
-          const res = await github.rest.repos.createRelease({
-            owner,
-            repo,
-            tag_name: currentRelease,
-            name: currentRelease,
-          });
-          const release_id = res.data.id;
-
-          for (const name of await fs.readdir('./binaries/')) {
-            await github.rest.repos.uploadReleaseAsset({
+            const res = await github.rest.repos.createRelease({
               owner,
               repo,
-              release_id,
-              name,
-              data: await fs.readFile(`./binaries/${name}`),
+              tag_name: currentRelease,
+              name: currentRelease,
             });
-          }
+            const release_id = res.data.id;
+
+            for (const name of await fs.readdir('./binaries/')) {
+              await github.rest.repos.uploadReleaseAsset({
+                owner,
+                repo,
+                release_id,
+                name,
+                data: await fs.readFile(`./binaries/${name}`),
+              });
+            }
 
   dockerhub:
     needs: binaries
     runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
 
-    - uses: actions/download-artifact@v8
-      with:
-        name: binaries
-        path: binaries
+      - uses: actions/download-artifact@v8
+        with:
+          name: binaries
+          path: binaries
 
-    - run: make dockerhub
-      env:
-        DOCKER_USER: ${{ secrets.DOCKER_USER }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - run: make dockerhub
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
