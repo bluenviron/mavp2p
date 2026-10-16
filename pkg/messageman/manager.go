@@ -49,7 +49,7 @@ type Manager struct {
 	StreamReqDisable bool
 	Node             *gomavlib.Node
 
-	remoteNodeMutex sync.Mutex
+	remoteNodeMutex sync.RWMutex
 	remoteNodes     map[remoteNodeKey]time.Time
 }
 
@@ -90,22 +90,32 @@ func (m *Manager) run() {
 	}
 }
 
-func (m *Manager) findNodeBySystemID(systemID byte) *remoteNodeKey {
+// findChannelsBySystemID returns all channels of a given system.
+func (m *Manager) findChannelsBySystemID(systemID byte) map[*gomavlib.Channel]struct{} {
+	m.remoteNodeMutex.RLock()
+	defer m.remoteNodeMutex.RUnlock()
+
+	channels := make(map[*gomavlib.Channel]struct{})
 	for key := range m.remoteNodes {
 		if key.systemID == systemID {
-			return &key
+			channels[key.channel] = struct{}{}
 		}
 	}
-	return nil
+	return channels
 }
 
-func (m *Manager) findNodeBySystemAndComponentID(systemID byte, componentID byte) *remoteNodeKey {
+// findChannelsBySystemAndComponentID returns all channels of a given system and component.
+func (m *Manager) findChannelsBySystemAndComponentID(systemID byte, componentID byte) map[*gomavlib.Channel]struct{} {
+	m.remoteNodeMutex.RLock()
+	defer m.remoteNodeMutex.RUnlock()
+
+	channels := make(map[*gomavlib.Channel]struct{})
 	for key := range m.remoteNodes {
 		if key.systemID == systemID && key.componentID == componentID {
-			return &key
+			channels[key.channel] = struct{}{}
 		}
 	}
-	return nil
+	return channels
 }
 
 // ProcessFrame processes a EventFrame.
@@ -137,18 +147,24 @@ func (m *Manager) ProcessFrame(evt *gomavlib.EventFrame) {
 	// if message has a target, route only to it
 	systemID, componentID, hasTarget := getTarget(evt.Message())
 	if hasTarget && systemID > 0 {
-		var key *remoteNodeKey
+		var channels map[*gomavlib.Channel]struct{}
 		if componentID == 0 {
-			key = m.findNodeBySystemID(systemID)
+			channels = m.findChannelsBySystemID(systemID)
 		} else {
-			key = m.findNodeBySystemAndComponentID(systemID, componentID)
+			channels = m.findChannelsBySystemAndComponentID(systemID, componentID)
 		}
 
-		if key != nil {
-			if key.channel == evt.Channel {
-				log.Printf("Warning: channel %s attempted to send message to itself, discarding", key.channel)
-			} else {
-				m.Node.WriteFrameTo(key.channel, evt.Frame) //nolint:errcheck
+		if len(channels) != 0 {
+			delivered := false
+			for channel := range channels {
+				if channel == evt.Channel {
+					log.Printf("Warning: channel %s attempted to send message to itself, discarding", evt.Channel)
+				} else {
+					m.Node.WriteFrameTo(channel, evt.Frame) //nolint:errcheck
+					delivered = true
+				}
+			}
+			if delivered {
 				return
 			}
 		} else {
