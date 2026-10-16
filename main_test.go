@@ -158,7 +158,7 @@ func TestTarget(t *testing.T) {
 	msg := &common.MessageCommandLong{
 		TargetSystem:    6,
 		TargetComponent: 7,
-		Command:         common.MAV_CMD_NAV_FOLLOW,
+		Command:         common.MAV_CMD_DO_FOLLOW,
 	}
 
 	err = pub.WriteMessageAll(msg)
@@ -237,7 +237,7 @@ func TestTargetNotFound(t *testing.T) {
 	msg := &common.MessageCommandLong{
 		TargetSystem:    6,
 		TargetComponent: 7,
-		Command:         common.MAV_CMD_NAV_FOLLOW,
+		Command:         common.MAV_CMD_DO_FOLLOW,
 	}
 
 	err = pub.WriteMessageAll(msg)
