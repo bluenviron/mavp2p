@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"slices"
 	"sync"
 	"time"
 
@@ -50,7 +49,7 @@ type Manager struct {
 	StreamReqDisable bool
 	Node             *gomavlib.Node
 
-	remoteNodeMutex sync.Mutex
+	remoteNodeMutex sync.RWMutex
 	remoteNodes     map[remoteNodeKey]time.Time
 }
 
@@ -91,39 +90,29 @@ func (m *Manager) run() {
 	}
 }
 
-// appendChannel adds ch unless already present.
-func appendChannel(channels []*gomavlib.Channel, ch *gomavlib.Channel) []*gomavlib.Channel {
-	if slices.Contains(channels, ch) {
-		return channels
-	}
-	return append(channels, ch)
-}
-
 // findChannelsBySystemID returns all channels of a given system.
-func (m *Manager) findChannelsBySystemID(systemID byte) []*gomavlib.Channel {
-	// lock: the cleanup routine deletes from remoteNodes concurrently
-	m.remoteNodeMutex.Lock()
-	defer m.remoteNodeMutex.Unlock()
+func (m *Manager) findChannelsBySystemID(systemID byte) map[*gomavlib.Channel]struct{} {
+	m.remoteNodeMutex.RLock()
+	defer m.remoteNodeMutex.RUnlock()
 
-	var channels []*gomavlib.Channel
+	channels := make(map[*gomavlib.Channel]struct{})
 	for key := range m.remoteNodes {
 		if key.systemID == systemID {
-			channels = appendChannel(channels, key.channel)
+			channels[key.channel] = struct{}{}
 		}
 	}
 	return channels
 }
 
 // findChannelsBySystemAndComponentID returns all channels of a given system and component.
-func (m *Manager) findChannelsBySystemAndComponentID(systemID byte, componentID byte) []*gomavlib.Channel {
-	// lock: the cleanup routine deletes from remoteNodes concurrently
-	m.remoteNodeMutex.Lock()
-	defer m.remoteNodeMutex.Unlock()
+func (m *Manager) findChannelsBySystemAndComponentID(systemID byte, componentID byte) map[*gomavlib.Channel]struct{} {
+	m.remoteNodeMutex.RLock()
+	defer m.remoteNodeMutex.RUnlock()
 
-	var channels []*gomavlib.Channel
+	channels := make(map[*gomavlib.Channel]struct{})
 	for key := range m.remoteNodes {
 		if key.systemID == systemID && key.componentID == componentID {
-			channels = appendChannel(channels, key.channel)
+			channels[key.channel] = struct{}{}
 		}
 	}
 	return channels
@@ -158,7 +147,7 @@ func (m *Manager) ProcessFrame(evt *gomavlib.EventFrame) {
 	// if message has a target, route only to it
 	systemID, componentID, hasTarget := getTarget(evt.Message())
 	if hasTarget && systemID > 0 {
-		var channels []*gomavlib.Channel
+		var channels map[*gomavlib.Channel]struct{}
 		if componentID == 0 {
 			channels = m.findChannelsBySystemID(systemID)
 		} else {
@@ -167,7 +156,7 @@ func (m *Manager) ProcessFrame(evt *gomavlib.EventFrame) {
 
 		if len(channels) != 0 {
 			delivered := false
-			for _, channel := range channels {
+			for channel := range channels {
 				if channel == evt.Channel {
 					log.Printf("Warning: channel %s attempted to send message to itself, discarding", evt.Channel)
 				} else {
