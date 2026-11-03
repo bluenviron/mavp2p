@@ -3,7 +3,7 @@ module github.com/bluenviron/mavp2p
 go 1.27.0
 
 require (
-	github.com/alecthomas/kong v1.16.1
+	github.com/alecthomas/kong v1.17.0
 	github.com/bluenviron/gomavlib/v4 v4.0.1
 	github.com/stretchr/testify v1.12.1
 )
