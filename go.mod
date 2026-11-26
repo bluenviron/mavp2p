@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	github.com/alecthomas/kong v1.17.0
-	github.com/bluenviron/gomavlib/v4 v4.0.1
+	github.com/bluenviron/gomavlib/v4 v4.0.2
 	github.com/stretchr/testify v1.12.1
 )
 
